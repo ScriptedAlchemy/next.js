@@ -314,7 +314,6 @@ export async function renderToHTML(
     App.getInitialProps === (App as any).origGetInitialProps
 
   const hasPageGetInitialProps = !!(Component as any).getInitialProps
-console.log(Component);
   const isAutoExport =
     !hasPageGetInitialProps &&
     defaultAppGetInitialProps &&

@@ -5,7 +5,7 @@ import { stringify } from 'querystring'
 import { parse } from 'url'
 import webpack from 'webpack'
 import WebpackDevMiddleware from 'webpack-dev-middleware'
-import EntryPlugin from 'webpack/lib/EntryPlugin'
+import DynamicEntryPlugin from 'webpack/lib/DynamicEntryPlugin'
 
 import { isWriteable } from '../build/is-writeable'
 import * as Log from '../build/output/log'
@@ -30,8 +30,9 @@ function addEntry(
   entry: string[]
 ) {
   return new Promise((resolve, reject) => {
-    const dep = EntryPlugin.createDependency(entry, {name})
-    compilation.addEntry(context, dep, { name }, (err: Error) => {
+
+    const dep = new DynamicEntryPlugin(context,entry).apply(compilation.compiler)
+    compilation.addEntry(context, dep, name , (err: Error) => {
       if (err) return reject(err)
       resolve()
     })
@@ -85,17 +86,34 @@ export default function onDemandEntryHandler(
           }
 
           entries[page].status = BUILDING
-          return addEntry(compilation, compiler.context, name, [
+          const entry = [
             compiler.name === 'client'
-              ? `next-client-pages-loader?${stringify({
+                ? `next-client-pages-loader?${stringify({
                   page,
                   absolutePagePath,
                 })}!`
-              : absolutePagePath,
-          ])
+                : absolutePagePath,
+          ]
+          new DynamicEntryPlugin(compiler.context,entry).apply(compiler)
+
+          // const entry = addEntry(compilation, compiler.context, name, [
+          //   compiler.name === 'client'
+          //     ? `next-client-pages-loader?${stringify({
+          //         page,
+          //         absolutePagePath,
+          //       })}!`
+          //     : absolutePagePath,
+          // ])
+          // console.log('entry', entry)
+          return entry
         })
 
-        return Promise.all(allEntries).catch(err => console.error(err))
+        return Promise.all(allEntries)
+          .then(all => {
+            console.log(all)
+            return all
+          })
+          .catch(err => console.error(err))
       }
     )
   }
