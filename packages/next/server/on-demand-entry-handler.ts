@@ -5,8 +5,9 @@ import { stringify } from 'querystring'
 import { parse } from 'url'
 import webpack from 'webpack'
 import WebpackDevMiddleware from 'webpack-dev-middleware'
-import DynamicEntryPlugin from 'webpack/lib/DynamicEntryPlugin'
-
+import EntryPlugin from 'webpack/lib/EntryPlugin'
+import EntryOptionPlugin from 'webpack/lib/EntryOptionPlugin'
+import EntryDependency from 'webpack/lib/dependencies/EntryDependency'
 import { isWriteable } from '../build/is-writeable'
 import * as Log from '../build/output/log'
 import { API_ROUTE } from '../lib/constants'
@@ -21,6 +22,56 @@ import { findPageFile } from './lib/find-page-file'
 const ADDED = Symbol('added')
 const BUILDING = Symbol('building')
 const BUILT = Symbol('built')
+class DynamicEntryPlugin {
+  /**
+   * @param {string} context the context path
+   * @param {EntryDynamic} entry the entry value
+   */
+  constructor(context, entry) {
+    this.context = context
+    this.entry = entry
+  }
+
+  /**
+   * @param {Compiler} compiler the compiler instance
+   * @returns {void}
+   */
+  apply(compiler) {
+    // compiler.hooks.make.tapPromise(
+    //     "DynamicEntryPlugin",
+    //     (compilation, callback) =>
+    return Promise.resolve(this.entry)
+      .then(entry => {
+        const promises = []
+        for (const name of Object.keys(entry)) {
+          const desc = entry[name]
+          const options = EntryOptionPlugin.entryDescriptionToOptions(
+            compiler,
+            name,
+            desc
+          )
+          for (const entry of desc.import) {
+            promises.push(
+              new Promise((resolve, reject) => {
+                compilation.addEntry(
+                  this.context,
+                  EntryPlugin.createDependency(entry, options),
+                  options,
+                  err => {
+                    if (err) return reject(err)
+                    resolve()
+                  }
+                )
+              })
+            )
+          }
+        }
+        return Promise.all(promises)
+      })
+      .then(x => {})
+    // );
+  }
+}
 
 // Based on https://github.com/webpack/webpack/blob/master/lib/DynamicEntryPlugin.js#L29-L37
 function addEntry(
@@ -30,9 +81,8 @@ function addEntry(
   entry: string[]
 ) {
   return new Promise((resolve, reject) => {
-
-    const dep = new DynamicEntryPlugin(context,entry).apply(compilation.compiler)
-    compilation.addEntry(context, dep, name , (err: Error) => {
+    const dep = DynamicEntryPlugin.createDependency(entry, name)
+    compilation.addEntry(context, dep, name, (err: Error) => {
       if (err) return reject(err)
       resolve()
     })
@@ -68,6 +118,16 @@ export default function onDemandEntryHandler(
   let reloadCallbacks: EventEmitter | null = new EventEmitter()
 
   for (const compiler of compilers) {
+    compiler.hooks.compilation.tap(
+      'DynamicEntryPlugin',
+      (compilation, { normalModuleFactory }) => {
+        compilation.dependencyFactories.set(
+          EntryDependency,
+          normalModuleFactory
+        )
+      }
+    )
+
     compiler.hooks.make.tapPromise(
       'NextJsOnDemandEntries',
       (compilation: webpack.compilation.Compilation) => {
@@ -86,34 +146,19 @@ export default function onDemandEntryHandler(
           }
 
           entries[page].status = BUILDING
-          const entry = [
+
+          return new DynamicEntryPlugin(compiler.context, [
             compiler.name === 'client'
-                ? `next-client-pages-loader?${stringify({
+              ? `next-client-pages-loader?${stringify({
                   page,
                   absolutePagePath,
                 })}!`
-                : absolutePagePath,
-          ]
-          new DynamicEntryPlugin(compiler.context,entry).apply(compiler)
-
-          // const entry = addEntry(compilation, compiler.context, name, [
-          //   compiler.name === 'client'
-          //     ? `next-client-pages-loader?${stringify({
-          //         page,
-          //         absolutePagePath,
-          //       })}!`
-          //     : absolutePagePath,
-          // ])
-          // console.log('entry', entry)
-          return entry
+              : absolutePagePath,
+          ]).apply(compiler)
         })
 
-        return Promise.all(allEntries)
-          .then(all => {
-            console.log(all)
-            return all
-          })
-          .catch(err => console.error(err))
+        console.log(allEntries)
+        return Promise.all(allEntries).catch(err => console.error(err))
       }
     )
   }
