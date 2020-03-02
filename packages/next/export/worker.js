@@ -169,7 +169,6 @@ export default async function({
         page,
         serverless
       )
-console.log('components',components)
       // for non-dynamic SSG pages we should have already
       // prerendered the file
       if (renderedDuringBuild(components.unstable_getStaticProps)) {

@@ -90,6 +90,7 @@ export default class DevServer extends Server {
   }
 
   async addExportPathMapRoutes() {
+    console.log('addExportPathMapRoutes')
     // Makes `next export` exportPathMap work in development mode.
     // So that the user doesn't have to define a custom server reading the exportPathMap
     if (this.nextConfig.exportPathMap) {
@@ -136,6 +137,7 @@ export default class DevServer extends Server {
   }
 
   async startWatcher() {
+    console.log('startWatcher')
     if (this.webpackWatcher) {
       return
     }
@@ -198,6 +200,7 @@ export default class DevServer extends Server {
   }
 
   async stopWatcher() {
+    console.log('stopWatcher')
     if (!this.webpackWatcher) {
       return
     }
@@ -207,6 +210,7 @@ export default class DevServer extends Server {
   }
 
   async prepare() {
+    console.log('prepare')
     await verifyTypeScriptSetup(this.dir, this.pagesDir!)
     await this.loadCustomRoutes()
 

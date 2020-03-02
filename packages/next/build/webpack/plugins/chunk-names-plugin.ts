@@ -22,7 +22,6 @@ export default class ChunkNamesPlugin {
                 } else {
                   filenameTemplate = outputOptions.chunkFilename
                 }
-                console.log(filenameTemplate)
                 options.chunk.filenameTemplate = filenameTemplate
                 return originalMethod(result, options)
               }

@@ -5,7 +5,7 @@ import { stringify } from 'querystring'
 import { parse } from 'url'
 import webpack from 'webpack'
 import WebpackDevMiddleware from 'webpack-dev-middleware'
-import DynamicEntryPlugin from 'webpack/lib/DynamicEntryPlugin'
+import EntryPlugin from 'webpack/lib/EntryPlugin'
 
 import { isWriteable } from '../build/is-writeable'
 import * as Log from '../build/output/log'
@@ -30,8 +30,8 @@ function addEntry(
   entry: string[]
 ) {
   return new Promise((resolve, reject) => {
-    const dep = DynamicEntryPlugin.createDependency(entry, name)
-    compilation.addEntry(context, dep, name, (err: Error) => {
+    const dep = EntryPlugin.createDependency(entry, {name})
+    compilation.addEntry(context, dep, { name }, (err: Error) => {
       if (err) return reject(err)
       resolve()
     })
@@ -249,12 +249,13 @@ export default function onDemandEntryHandler(
     entryInfo.lastActiveTime = Date.now()
     return toSend
   }
-
+  console.log('before wait until reload')
   return {
     waitUntilReloaded() {
       if (!reloading) return Promise.resolve(true)
       return new Promise(resolve => {
         reloadCallbacks!.once('done', function() {
+          console.log('reload resolved')
           resolve()
         })
       })

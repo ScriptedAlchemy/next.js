@@ -636,7 +636,6 @@ export default async function build(dir: string, conf = null): Promise<void> {
 
   if (staticPages.size > 0 || ssgPages.size > 0 || useStatic404) {
     const combinedPages = [...staticPages, ...ssgPages]
-    console.log(combinedPages)
     const exportApp = require('../export').default
     const exportOptions = {
       silent: true,

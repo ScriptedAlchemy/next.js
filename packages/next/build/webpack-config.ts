@@ -768,7 +768,7 @@ export default async function getBaseWebpackConfig(
               //     },
               //   })
               // )
-              // devPlugins.push(new webpack.HotModuleReplacementPlugin())
+              devPlugins.push(new webpack.HotModuleReplacementPlugin())
             }
 
             return devPlugins
