@@ -33,32 +33,34 @@ function addEntry(
 ) {
   return Promise.resolve(entry)
     .then(entry => {
-      console.log('entry', entry)
       const promises = []
       for (const name of Object.keys(entry)) {
         const desc = { import: entry[name] }
+        console.log('should hash', entry[name])
         const options = EntryOptionPlugin.entryDescriptionToOptions(
           compiler,
           name,
           desc
         )
-        console.log('options', options)
+
         for (const entry of desc.import) {
-          console.log(EntryPlugin.createDependency(entry, options))
+          // console.log(EntryPlugin.createDependency(entry, options))
+
+          promises.push(
+            new Promise((resolve, reject) => {
+              compilation.addEntry(
+                context,
+                EntryPlugin.createDependency(entry, options),
+                // {...options,library:compiler.options.output.library,filename:name},
+                options,
+                err => {
+                  if (err) return reject(err)
+                  resolve()
+                }
+              )
+            })
+          )
         }
-        promises.push(
-          new Promise((resolve, reject) => {
-            compilation.addEntry(
-              context,
-              EntryPlugin.createDependency(entry, options),
-              options,
-              err => {
-                if (err) return reject(err)
-                resolve()
-              }
-            )
-          })
-        )
       }
       return Promise.all(promises)
     })
