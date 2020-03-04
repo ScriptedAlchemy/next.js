@@ -505,7 +505,6 @@ export default async function build(dir: string, conf = null): Promise<void> {
       pagesManifest[page] = bundleRelative.replace(/\\/g, '/')
 
       const nonReservedPage = !page.match(/^\/(_app|_error|_document|api)/)
-
       if (nonReservedPage && customAppGetInitialProps === undefined) {
         customAppGetInitialProps = hasCustomGetInitialProps(
           isLikeServerless
@@ -630,6 +629,7 @@ export default async function build(dir: string, conf = null): Promise<void> {
       'utf8'
     )
   }
+
   // Since custom _app.js can wrap the 404 page we have to opt-out of static optimization if it has getInitialProps
   // Only export the static 404 when there is no /_error present
   const useStatic404 =
@@ -666,8 +666,11 @@ export default async function build(dir: string, conf = null): Promise<void> {
   const tbdPrerenderRoutes: string[] = []
 
   if (staticPages.size > 0 || ssgPages.size > 0 || useStatic404) {
+    console.log({ staticPages, ssgPages })
+    // const combinedPages = [...staticPages, ...ssgPages]
     const combinedPages = [...staticPages, ...ssgPages]
     const exportApp = require('../export').default
+
     const exportOptions = {
       silent: true,
       buildExport: true,
