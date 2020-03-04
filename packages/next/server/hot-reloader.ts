@@ -551,13 +551,8 @@ export default class HotReloader {
     if (page !== '/_error' && BLOCKED_PAGES.indexOf(page) !== -1) {
       return
     }
-    return this.onDemandEntries.ensurePage(page).then(result => {
-      return new Promise(resolve => {
-        setTimeout(() => {
-          resolve(result)
-        }, 400)
-      })
-    })
+    if (page !== '/') await this.onDemandEntries.ensurePage('/')
+    return this.onDemandEntries.ensurePage(page)
   }
 }
 
