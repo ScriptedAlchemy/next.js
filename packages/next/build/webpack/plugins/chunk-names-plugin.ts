@@ -7,7 +7,7 @@ export default class ChunkNamesPlugin {
     compiler.hooks.compilation.tap(
       'NextJsChunkNamesPlugin',
       (compilation: any) => {
-        compilation.chunkTemplate.hooks.renderManifest.intercept({
+        compilation.hooks.renderManifest.intercept({
           register(tapInfo: any) {
             if (tapInfo.name === 'JavascriptModulesPlugin') {
               const originalMethod = tapInfo.fn
