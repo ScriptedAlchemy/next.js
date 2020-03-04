@@ -480,6 +480,8 @@ export default class HotReloader {
       }
     )
 
+    console.log('on deemand', this.config.onDemandEntries)
+
     const onDemandEntries = onDemandEntryHandler(
       webpackDevMiddleware,
       multiCompiler,
@@ -549,7 +551,13 @@ export default class HotReloader {
     if (page !== '/_error' && BLOCKED_PAGES.indexOf(page) !== -1) {
       return
     }
-    return this.onDemandEntries.ensurePage(page)
+    return this.onDemandEntries.ensurePage(page).then(result => {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve(result)
+        }, 400)
+      })
+    })
   }
 }
 

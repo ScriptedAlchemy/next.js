@@ -11,6 +11,7 @@ export function getPageFiles(
   buildManifest: BuildManifest,
   page: string
 ): string[] {
+  // hack to get the latest build-manifest back from disk
   const normalizedPage = normalizePagePath(page)
   let files = buildManifest.pages[normalizedPage]
 

@@ -36,7 +36,6 @@ function addEntry(
       const promises = []
       for (const name of Object.keys(entry)) {
         const desc = { import: entry[name] }
-        console.log('should hash', entry[name])
         const options = EntryOptionPlugin.entryDescriptionToOptions(
           compiler,
           name,
@@ -44,14 +43,11 @@ function addEntry(
         )
 
         for (const entry of desc.import) {
-          // console.log(EntryPlugin.createDependency(entry, options))
-
           promises.push(
             new Promise((resolve, reject) => {
               compilation.addEntry(
                 context,
                 EntryPlugin.createDependency(entry, options),
-                // {...options,library:compiler.options.output.library,filename:name},
                 options,
                 err => {
                   if (err) return reject(err)
@@ -134,16 +130,6 @@ export default function onDemandEntryHandler(
                 : absolutePagePath,
             ],
           })
-          // return new DynamicEntryPlugin(compiler.context, {
-          //   [name]: [
-          //     compiler.name === 'client'
-          //       ? `next-client-pages-loader?${stringify({
-          //           page,
-          //           absolutePagePath,
-          //         })}!`
-          //       : absolutePagePath,
-          //   ],
-          // }).apply(compiler, compilation)
         })
 
         return Promise.all(allEntries).catch(err => console.error(err))
@@ -318,7 +304,6 @@ export default function onDemandEntryHandler(
       try {
         normalizedPagePath = normalizePagePath(page)
       } catch (err) {
-        console.error(err)
         throw pageNotFoundError(page)
       }
 

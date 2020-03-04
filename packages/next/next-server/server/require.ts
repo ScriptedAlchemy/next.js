@@ -15,7 +15,10 @@ export function pageNotFoundError(page: string): Error {
   err.code = 'ENOENT'
   return err
 }
-
+function requireUncached(module) {
+  delete require.cache[require.resolve(module)]
+  return require(module)
+}
 export function getPagePath(
   page: string,
   distDir: string,
@@ -26,7 +29,7 @@ export function getPagePath(
     distDir,
     serverless && !dev ? SERVERLESS_DIRECTORY : SERVER_DIRECTORY
   )
-  const pagesManifest = require(join(serverBuildPath, PAGES_MANIFEST))
+  const pagesManifest = requireUncached(join(serverBuildPath, PAGES_MANIFEST))
 
   try {
     page = normalizePagePath(page)
@@ -56,5 +59,6 @@ export function requirePage(
   if (pagePath.endsWith('.html')) {
     return readFile(pagePath, 'utf8')
   }
-  return require(pagePath)
+
+  return requireUncached(pagePath)
 }

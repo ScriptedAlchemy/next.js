@@ -58,14 +58,17 @@ export type LoadComponentsReturnType = {
   unstable_getServerProps?: Unstable_getServerProps
 }
 
+function requireUncached(module) {
+  delete require.cache[require.resolve(module)]
+  return require(module)
+}
+
 export async function loadComponents(
   distDir: string,
   buildId: string,
   pathname: string,
   serverless: boolean
 ): Promise<LoadComponentsReturnType> {
-
-
   if (serverless) {
     const Component = await requirePage(pathname, distDir, serverless)
     return {
@@ -92,11 +95,14 @@ export async function loadComponents(
     'pages',
     '_app'
   )
-  const DocumentMod = require(documentPath)
+
+  // bust require cache on hmr
+  const DocumentMod = requireUncached(documentPath)
 
   const { middleware: DocumentMiddleware } = DocumentMod
 
-  const AppMod = require(appPath)
+  // bust require cache on hmr
+  const AppMod = requireUncached(appPath)
 
   const ComponentMod = requirePage(pathname, distDir, serverless)
 
@@ -107,8 +113,9 @@ export async function loadComponents(
     Document,
     App,
   ] = await Promise.all([
-    require(join(distDir, BUILD_MANIFEST)),
-    require(join(distDir, REACT_LOADABLE_MANIFEST)),
+    // bust require cache on hmr
+    requireUncached(join(distDir, BUILD_MANIFEST)),
+    requireUncached(join(distDir, REACT_LOADABLE_MANIFEST)),
     interopDefault(ComponentMod),
     interopDefault(DocumentMod),
     interopDefault(AppMod),

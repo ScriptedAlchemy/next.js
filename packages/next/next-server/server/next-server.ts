@@ -788,6 +788,9 @@ export default class Server {
     query: ParsedUrlQuery = {},
     params: Params | null = null
   ): Promise<FindComponentsResult | null> {
+    if (this.renderOpts.dev) {
+      global.distDir = this.distDir
+    }
     const paths = [
       // try serving a static AMP version first
       query.amp ? normalizePagePath(pathname) + '.amp' : null,
@@ -801,6 +804,7 @@ export default class Server {
           pagePath!,
           !this.renderOpts.dev && this._isLikeServerless
         )
+        console.log(components)
         return {
           components,
           query: {

@@ -485,6 +485,10 @@ export default class DevServer extends Server {
       }
       if (!this.quiet) console.error(err)
     }
+    // const fs = require('fs');
+
+    // var contents = fs.readFileSync('', 'utf8');
+
     const html = await super.renderToHTML(req, res, pathname, query, options)
     return html
   }
