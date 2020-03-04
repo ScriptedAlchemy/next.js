@@ -10,7 +10,7 @@ import { connectChunkAndModule } from 'webpack/lib/GraphHelpers'
 export class ServerlessPlugin {
   apply(compiler: Compiler) {
     compiler.hooks.compilation.tap('ServerlessPlugin', compilation => {
-      compilation.hooks.optimizeChunksBasic.tap('ServerlessPlugin', chunks => {
+      compilation.hooks.optimizeChunks.tap('ServerlessPlugin', chunks => {
         chunks.forEach(chunk => {
           // If chunk is not an entry point skip them
           if (chunk.hasEntryModule()) {
