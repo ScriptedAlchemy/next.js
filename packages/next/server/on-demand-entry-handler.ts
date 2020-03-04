@@ -32,6 +32,7 @@ function addEntry(
   othername: string,
   entry: string[]
 ) {
+  console.log('othername', othername)
   return Promise.resolve(entry)
     .then(entry => {
       const promises = []
