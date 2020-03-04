@@ -5,8 +5,9 @@ import { stringify } from 'querystring'
 import { parse } from 'url'
 import webpack from 'webpack'
 import WebpackDevMiddleware from 'webpack-dev-middleware'
-import DynamicEntryPlugin from 'webpack/lib/DynamicEntryPlugin'
-
+import EntryPlugin from 'webpack/lib/EntryPlugin'
+import EntryOptionPlugin from 'webpack/lib/EntryOptionPlugin'
+import EntryDependency from 'webpack/lib/dependencies/EntryDependency'
 import { isWriteable } from '../build/is-writeable'
 import * as Log from '../build/output/log'
 import { API_ROUTE } from '../lib/constants'
@@ -24,18 +25,42 @@ const BUILT = Symbol('built')
 
 // Based on https://github.com/webpack/webpack/blob/master/lib/DynamicEntryPlugin.js#L29-L37
 function addEntry(
-  compilation: webpack.compilation.Compilation,
+  compiler,
+  compilation,
   context: string,
-  name: string,
+  othername: string,
   entry: string[]
 ) {
-  return new Promise((resolve, reject) => {
-    const dep = DynamicEntryPlugin.createDependency(entry, name)
-    compilation.addEntry(context, dep, name, (err: Error) => {
-      if (err) return reject(err)
-      resolve()
+  return Promise.resolve(entry)
+    .then(entry => {
+      const promises = []
+      for (const name of Object.keys(entry)) {
+        const desc = { import: entry[name] }
+        const options = EntryOptionPlugin.entryDescriptionToOptions(
+          compiler,
+          name,
+          desc
+        )
+
+        for (const entry of desc.import) {
+          promises.push(
+            new Promise((resolve, reject) => {
+              compilation.addEntry(
+                context,
+                EntryPlugin.createDependency(entry, options),
+                options,
+                err => {
+                  if (err) return reject(err)
+                  resolve()
+                }
+              )
+            })
+          )
+        }
+      }
+      return Promise.all(promises)
     })
-  })
+    .then(x => {})
 }
 
 export default function onDemandEntryHandler(
@@ -67,6 +92,16 @@ export default function onDemandEntryHandler(
   let reloadCallbacks: EventEmitter | null = new EventEmitter()
 
   for (const compiler of compilers) {
+    compiler.hooks.compilation.tap(
+      'DynamicEntryPlugin',
+      (compilation, { normalModuleFactory }) => {
+        compilation.dependencyFactories.set(
+          EntryDependency,
+          normalModuleFactory
+        )
+      }
+    )
+
     compiler.hooks.make.tapPromise(
       'NextJsOnDemandEntries',
       (compilation: webpack.compilation.Compilation) => {
@@ -85,14 +120,16 @@ export default function onDemandEntryHandler(
           }
 
           entries[page].status = BUILDING
-          return addEntry(compilation, compiler.context, name, [
-            compiler.name === 'client'
-              ? `next-client-pages-loader?${stringify({
-                  page,
-                  absolutePagePath,
-                })}!`
-              : absolutePagePath,
-          ])
+          return addEntry(compiler, compilation, compiler.context, name, {
+            [name]: [
+              compiler.name === 'client'
+                ? `next-client-pages-loader?${stringify({
+                    page,
+                    absolutePagePath,
+                  })}!`
+                : absolutePagePath,
+            ],
+          })
         })
 
         return Promise.all(allEntries).catch(err => console.error(err))
