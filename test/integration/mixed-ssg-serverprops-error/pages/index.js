@@ -1,10 +1,10 @@
-export const getStaticProps = async () => {
+export const unstable_getStaticProps = async () => {
   return {
     props: { world: 'world' },
   }
 }
 
-export const getServerSideProps = async () => {
+export const unstable_getServerProps = async () => {
   return {
     props: { world: 'world' },
   }

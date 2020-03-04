@@ -1,4 +1,4 @@
 module.exports = {
-  target: 'server',
+  target: 'serverless',
   pageExtensions: ['page.js'],
 }

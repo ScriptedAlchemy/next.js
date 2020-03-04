@@ -1,11 +1,13 @@
 import React from 'react'
 import Link from 'next/link'
 
-export async function getStaticPaths() {
-  return { paths: [], fallback: true }
+// eslint-disable-next-line camelcase
+export async function unstable_getStaticPaths() {
+  return { paths: [] }
 }
 
-export async function getStaticProps({ params }) {
+// eslint-disable-next-line camelcase
+export async function unstable_getStaticProps({ params }) {
   return {
     props: {
       user: params.user,

@@ -2,7 +2,8 @@ import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 
-export async function getStaticPaths() {
+// eslint-disable-next-line camelcase
+export async function unstable_getStaticPaths() {
   return {
     paths: [
       '/blog/post-1',
@@ -12,13 +13,13 @@ export async function getStaticPaths() {
       '/blog/post.1',
       '/blog/post.1', // handle duplicates
     ],
-    fallback: true,
   }
 }
 
 let counter = 0
 
-export async function getStaticProps({ params }) {
+// eslint-disable-next-line camelcase
+export async function unstable_getStaticProps({ params }) {
   if (params.post === 'post-10') {
     await new Promise(resolve => {
       setTimeout(() => resolve(), 1000)

@@ -1,10 +1,10 @@
-export const getStaticPaths = async () => {
+export const unstable_getStaticPaths = async () => {
   return {
-    props: { world: 'world' }, fallback: true
+    props: { world: 'world' }
   }
 }
 
-export const getServerSideProps = async () => {
+export const unstable_getServerProps = async () => {
   return {
     props: { world: 'world' }
   }

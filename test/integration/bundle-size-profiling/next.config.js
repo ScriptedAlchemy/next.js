@@ -1,4 +1,7 @@
 module.exports = {
+  experimental: {
+    polyfillsOptimization: true,
+  },
   webpack(config, options) {
     if (!options.isServer) {
       config.profile = true
