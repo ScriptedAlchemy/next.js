@@ -191,7 +191,6 @@
     "@zeit/ncc": "0.18.5",
     "arg": "4.1.0",
     "ast-types": "0.13.2",
-    "autodll-webpack-plugin": "0.4.2",
     "babel-plugin-dynamic-import-node": "2.3.0",
     "nanoid": "2.0.3",
     "resolve": "1.11.0",
