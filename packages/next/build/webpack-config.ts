@@ -35,7 +35,7 @@ import ChunkNamesPlugin from './webpack/plugins/chunk-names-plugin'
 import { CssMinimizerPlugin } from './webpack/plugins/css-minimizer-plugin'
 import { importAutoDllPlugin } from './webpack/plugins/dll-import'
 import { DropClientPage } from './webpack/plugins/next-drop-client-page-plugin'
-import NextEsmPlugin from './webpack/plugins/next-esm-plugin'
+// import NextEsmPlugin from './webpack/plugins/next-esm-plugin'
 import NextJsSsrImportPlugin from './webpack/plugins/nextjs-ssr-import'
 import NextJsSSRModuleCachePlugin from './webpack/plugins/nextjs-ssr-module-cache'
 import PagesManifestPlugin from './webpack/plugins/pages-manifest-plugin'
@@ -620,7 +620,6 @@ export default async function getBaseWebpackConfig(
         : `static/chunks/${dev ? '[name]' : '[name].[contenthash]'}.js`,
       strictModuleExceptionHandling: true,
       crossOriginLoading: crossOrigin,
-      futureEmitAssets: !dev,
       webassemblyModuleFilename: 'static/wasm/[modulehash].wasm',
     },
     performance: false,
@@ -778,40 +777,33 @@ export default async function getBaseWebpackConfig(
             ]
 
             if (!isServer) {
-              const AutoDllPlugin = importAutoDllPlugin({ distDir })
-              devPlugins.push(
-                new AutoDllPlugin({
-                  filename: '[name]_[hash].js',
-                  path: './static/development/dll',
-                  context: dir,
-                  entry: {
-                    dll: ['react', 'react-dom'],
-                  },
-                  config: {
-                    devtool,
-                    mode: webpackMode,
-                    resolve: resolveConfig,
-                  },
-                })
-              )
+              // const AutoDllPlugin = importAutoDllPlugin({ distDir })
+              // devPlugins.push(
+              //   new AutoDllPlugin({
+              //     filename: '[name]_[hash].js',
+              //     path: './static/development/dll',
+              //     context: dir,
+              //     entry: {
+              //       dll: ['react', 'react-dom'],
+              //     },
+              //     config: {
+              //       devtool,
+              //       mode: webpackMode,
+              //       resolve: resolveConfig,
+              //     },
+              //   })
+              // )
               devPlugins.push(new webpack.HotModuleReplacementPlugin())
             }
 
             return devPlugins
           })()
         : []),
-      !dev && new webpack.HashedModuleIdsPlugin(),
+      !dev && new webpack.ids.HashedModuleIdsPlugin(),
       !dev &&
         new webpack.IgnorePlugin({
-          checkResource: (resource: string) => {
-            return /react-is/.test(resource)
-          },
-          checkContext: (context: string) => {
-            return (
-              /next-server[\\/]dist[\\/]/.test(context) ||
-              /next[\\/]dist[\\/]/.test(context)
-            )
-          },
+          resourceRegExp: /react-is/,
+          contextRegExp: /(next-server|next)[\\/]dist[\\/]/,
         }),
       isServerless && isServer && new ServerlessPlugin(),
       isServer && new PagesManifestPlugin(isLikeServerless),
@@ -845,25 +837,25 @@ export default async function getBaseWebpackConfig(
             formatter: 'codeframe',
           })
         ),
-      config.experimental.modern &&
-        !isServer &&
-        !dev &&
-        new NextEsmPlugin({
-          filename: (getFileName: Function | string) => (...args: any[]) => {
-            const name =
-              typeof getFileName === 'function'
-                ? getFileName(...args)
-                : getFileName
-
-            return name.includes('.js')
-              ? name.replace(/\.js$/, '.module.js')
-              : escapePathVariables(
-                  args[0].chunk.name.replace(/\.js$/, '.module.js')
-                )
-          },
-          chunkFilename: (inputChunkName: string) =>
-            inputChunkName.replace(/\.js$/, '.module.js'),
-        }),
+      // config.experimental.modern &&
+      //   !isServer &&
+      //   !dev &&
+      //   new NextEsmPlugin({
+      //     filename: (getFileName: Function | string) => (...args: any[]) => {
+      //       const name =
+      //         typeof getFileName === 'function'
+      //           ? getFileName(...args)
+      //           : getFileName
+      //
+      //       return name.includes('.js')
+      //         ? name.replace(/\.js$/, '.module.js')
+      //         : escapePathVariables(
+      //             args[0].chunk.name.replace(/\.js$/, '.module.js')
+      //           )
+      //     },
+      //     chunkFilename: (inputChunkName: string) =>
+      //       inputChunkName.replace(/\.js$/, '.module.js'),
+      //   }),
       config.experimental.conformance &&
         !dev &&
         new WebpackConformancePlugin({
@@ -899,6 +891,8 @@ export default async function getBaseWebpackConfig(
     assetPrefix: config.assetPrefix || '',
     sassOptions: config.experimental.sassOptions,
   })
+
+  if (!isServer) webpackConfig.output.library = 'nextapp'
 
   if (typeof config.webpack === 'function') {
     webpackConfig = config.webpack(webpackConfig, {
