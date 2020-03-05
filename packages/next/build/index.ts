@@ -7,7 +7,7 @@ import findUp from 'find-up'
 import fs from 'fs'
 import Worker from 'jest-worker'
 import mkdirpOrig from 'mkdirp'
-import nanoid from 'next/dist/compiled/nanoid/index.js'
+import nanoid from '@module-federation/next/dist/compiled/nanoid/index.js'
 import path from 'path'
 import { pathToRegexp } from 'path-to-regexp'
 import { promisify } from 'util'
@@ -328,7 +328,6 @@ export default async function build(dir: string, conf = null): Promise<void> {
   ])
 
   const clientConfig = configs[0]
-
   if (
     clientConfig.optimization &&
     (clientConfig.optimization.minimize !== true ||
@@ -371,8 +370,8 @@ export default async function build(dir: string, conf = null): Promise<void> {
     buildSpinner.stopAndPersist()
   }
   console.log()
-
-  result = formatWebpackMessages(result)
+console.log(result);
+  // result = formatWebpackMessages(result)
 
   if (result.errors.length > 0) {
     // Only keep the first error. Others are often indicative
