@@ -369,7 +369,8 @@ export default async function build(dir: string, conf = null): Promise<void> {
   if (buildSpinner) {
     buildSpinner.stopAndPersist()
   }
-  // TODO fix message formatting
+  console.log('There were errors!')
+  console.log(result)
   console.log(JSON.stringify(result, null, 2))
   // result = formatWebpackMessages(result)
 
