@@ -62,7 +62,7 @@ const nextServerlessLoader: loader.Loader = function() {
 
   const runtimeConfigImports = runtimeConfig
     ? `
-      const { setConfig } = require('next/dist/next-server/lib/runtime-config')
+      const { setConfig } = require('@module-federation/next/dist/next-server/lib/runtime-config')
     `
     : ''
 
@@ -75,8 +75,8 @@ const nextServerlessLoader: loader.Loader = function() {
 
   const dynamicRouteImports = pageIsDynamicRoute
     ? `
-    const { getRouteMatcher } = require('next/dist/next-server/lib/router/utils/route-matcher');
-      const { getRouteRegex } = require('next/dist/next-server/lib/router/utils/route-regex');
+    const { getRouteMatcher } = require('@module-federation/next/dist/next-server/lib/router/utils/route-matcher');
+      const { getRouteRegex } = require('@module-federation/next/dist/next-server/lib/router/utils/route-regex');
   `
     : ''
 
@@ -88,7 +88,7 @@ const nextServerlessLoader: loader.Loader = function() {
 
   const rewriteImports = `
     const { rewrites } = require('${routesManifest}')
-    const { pathToRegexp, default: pathMatch } = require('next/dist/next-server/server/lib/path-match')
+    const { pathToRegexp, default: pathMatch } = require('@module-federation/next/dist/next-server/server/lib/path-match')
   `
 
   const handleRewrites = `
@@ -151,7 +151,7 @@ const nextServerlessLoader: loader.Loader = function() {
       }
       ${dynamicRouteImports}
       const { parse } = require('url')
-      const { apiResolver } = require('next/dist/next-server/server/api-utils')
+      const { apiResolver } = require('@module-federation/next/dist/next-server/server/api-utils')
       ${rewriteImports}
 
       ${dynamicRouteMatcher}
@@ -206,8 +206,8 @@ const nextServerlessLoader: loader.Loader = function() {
     }
     const {parse} = require('url')
     const {parse: parseQs} = require('querystring')
-    const {renderToHTML} =require('next/dist/next-server/server/render');
-    const {sendHTML} = require('next/dist/next-server/server/send-html');
+    const {renderToHTML} =require('@module-federation/next/dist/next-server/server/render');
+    const {sendHTML} = require('@module-federation/next/dist/next-server/server/send-html');
     const buildManifest = require('${buildManifest}');
     const reactLoadableManifest = require('${reactLoadableManifest}');
     const Document = require('${absoluteDocumentPath}').default;
