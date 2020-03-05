@@ -1,6 +1,6 @@
 import chalk from 'chalk'
-import textTable from 'next/dist/compiled/text-table'
-import createStore from 'next/dist/compiled/unistore'
+import textTable from '@module-federation/next/dist/compiled/text-table'
+import createStore from '@module-federation/next/dist/compiled/unistore'
 import stripAnsi from 'strip-ansi'
 
 import formatWebpackMessages from '../../client/dev/error-overlay/format-webpack-messages'

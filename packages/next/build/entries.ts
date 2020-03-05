@@ -43,9 +43,9 @@ export function createPagesMapping(
     {}
   )
 
-  pages['/_app'] = pages['/_app'] || 'next/dist/pages/_app'
-  pages['/_error'] = pages['/_error'] || 'next/dist/pages/_error'
-  pages['/_document'] = pages['/_document'] || 'next/dist/pages/_document'
+  pages['/_app'] = pages['/_app'] || '@module-federation/next/dist/pages/_app'
+  pages['/_error'] = pages['/_error'] || '@module-federation/next/dist/pages/_error'
+  pages['/_document'] = pages['/_document'] || '@module-federation/next/dist/pages/_document'
 
   return pages
 }

@@ -317,7 +317,7 @@ export default function onDemandEntryHandler(
 
       // Default the /_error route to the Next.js provided default page
       if (page === '/_error' && pagePath === null) {
-        pagePath = 'next/dist/pages/_error'
+        pagePath = '@module-federation/next/dist/pages/_error'
       }
 
       if (pagePath === null) {
@@ -334,7 +334,7 @@ export default function onDemandEntryHandler(
 
       const bundleFile = `${normalizePagePath(pageUrl)}.js`
       const name = join('static', buildId, 'pages', bundleFile)
-      const absolutePagePath = pagePath.startsWith('next/dist/pages')
+      const absolutePagePath = pagePath.startsWith('@module-federation/next/dist/pages')
         ? require.resolve(pagePath)
         : join(pagesDir, pagePath)
 
