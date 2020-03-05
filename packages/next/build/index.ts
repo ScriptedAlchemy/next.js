@@ -365,7 +365,7 @@ export default async function build(dir: string, conf = null): Promise<void> {
     buildSpinner.stopAndPersist()
   }
   console.log()
-console.log(result);
+  console.log(JSON.stringify(result, null, 2))
   // result = formatWebpackMessages(result)
 
   if (result.errors.length > 0) {
