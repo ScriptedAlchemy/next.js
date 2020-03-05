@@ -1,4 +1,4 @@
-import createStore from 'next/dist/compiled/unistore'
+import createStore from '@module-federation/next/dist/compiled/unistore'
 import stripAnsi from 'strip-ansi'
 
 import * as Log from './log'
