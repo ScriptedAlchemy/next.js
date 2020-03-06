@@ -46,8 +46,7 @@
     "build": "taskr",
     "release": "taskr release",
     "prepublish": "npm run release && yarn types",
-    "types": "echo 0",
-    "typesReal": "tsc --declaration --emitDeclarationOnly --declarationDir dist",
+    "types": "tsc --declaration --emitDeclarationOnly --declarationDir dist",
     "typescript": "tsc --noEmit --declaration"
   },
   "taskr": {
@@ -78,6 +77,7 @@
     "amphtml-validator": "1.0.30",
     "async-retry": "1.2.3",
     "async-sema": "3.0.0",
+    "autodll-webpack-plugin": "0.4.2",
     "babel-core": "7.0.0-bridge.0",
     "babel-loader": "8.0.6",
     "babel-plugin-syntax-jsx": "6.18.0",

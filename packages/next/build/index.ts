@@ -7,7 +7,7 @@ import findUp from 'find-up'
 import fs from 'fs'
 import Worker from 'jest-worker'
 import mkdirpOrig from 'mkdirp'
-import nanoid from '@module-federation/next/dist/compiled/nanoid/index.js'
+import nanoid from 'next/dist/compiled/nanoid/index.js'
 import path from 'path'
 import { pathToRegexp } from 'path-to-regexp'
 import { promisify } from 'util'
@@ -368,8 +368,7 @@ export default async function build(dir: string, conf = null): Promise<void> {
   if (buildSpinner) {
     buildSpinner.stopAndPersist()
   }
-  console.log('There were errors!')
-  console.log(result)
+  // TODO fix message formatting
   console.log(JSON.stringify(result, null, 2))
   // result = formatWebpackMessages(result)
 

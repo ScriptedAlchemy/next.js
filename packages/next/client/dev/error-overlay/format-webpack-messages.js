@@ -27,7 +27,6 @@ SOFTWARE.
 const friendlySyntaxErrorLabel = 'Syntax error:'
 
 function isLikelyASyntaxError(message) {
-  return false
   return message.indexOf(friendlySyntaxErrorLabel) !== -1
 }
 
@@ -129,7 +128,6 @@ function formatWebpackMessages(json) {
   })
   const result = { errors: formattedErrors, warnings: formattedWarnings }
   if (result.errors.some(isLikelyASyntaxError)) {
-    console.log(result);
     // If there are any syntax errors, show just them.
     result.errors = result.errors.filter(isLikelyASyntaxError)
   }
