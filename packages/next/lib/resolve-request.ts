@@ -1,4 +1,4 @@
-import resolve from '@module-federation/next/dist/compiled/resolve/index.js'
+import resolve from 'next/dist/compiled/resolve/index.js'
 import path from 'path'
 
 export function resolveRequest(req: string, issuer: string) {

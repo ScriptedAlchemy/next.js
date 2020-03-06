@@ -16,6 +16,8 @@ import {
   GetStaticProps,
 } from 'next/types'
 
+const webpack5Experiential = parseInt(require('webpack').version) === 5
+
 export function interopDefault(mod: any) {
   return mod.default || mod
 }
@@ -42,6 +44,8 @@ export type LoadComponentsReturnType = {
   getServerSideProps?: GetServerSideProps
 }
 
+// might be a hack, but on-demand-entries-handler would not require updated versions of manifest files.
+// used for webpack 5
 function requireUncached(module) {
   delete require.cache[require.resolve(module)]
   return require(module)
@@ -83,11 +87,15 @@ export async function loadComponents(
   )
 
   // bust require cache on hmr
-  const DocumentMod = requireUncached(documentPath)
+  const DocumentMod = webpack5Experiential
+    ? requireUncached(documentPath)
+    : require(documentPath)
   const { middleware: DocumentMiddleware } = DocumentMod
 
   // bust require cache on hmr
-  const AppMod = requireUncached(appPath)
+  const AppMod = webpack5Experiential
+    ? requireUncached(appPath)
+    : require(appPath)
 
   const ComponentMod = requirePage(pathname, distDir, serverless)
 
@@ -99,8 +107,12 @@ export async function loadComponents(
     App,
   ] = await Promise.all([
     // bust require cache on hmr
-    requireUncached(join(distDir, BUILD_MANIFEST)),
-    requireUncached(join(distDir, REACT_LOADABLE_MANIFEST)),
+    webpack5Experiential
+      ? requireUncached(join(distDir, BUILD_MANIFEST))
+      : require(join(distDir, BUILD_MANIFEST)),
+    webpack5Experiential
+      ? requireUncached(join(distDir, REACT_LOADABLE_MANIFEST))
+      : require(join(distDir, REACT_LOADABLE_MANIFEST)),
     interopDefault(ComponentMod),
     interopDefault(DocumentMod),
     interopDefault(AppMod),

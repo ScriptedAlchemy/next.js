@@ -2,7 +2,7 @@ import compression from 'compression'
 import fs from 'fs'
 import { IncomingMessage, ServerResponse } from 'http'
 import Proxy from 'http-proxy'
-import nanoid from '@module-federation/next/dist/compiled/nanoid/index.js'
+import nanoid from 'next/dist/compiled/nanoid/index.js'
 import { join, resolve, sep } from 'path'
 import { parse as parseQs, ParsedUrlQuery } from 'querystring'
 import { format as formatUrl, parse as parseUrl, UrlWithParsedQuery } from 'url'
@@ -814,7 +814,7 @@ export default class Server {
           pagePath!,
           !this.renderOpts.dev && this._isLikeServerless
         )
-        console.log(components)
+
         return {
           components,
           query: {
