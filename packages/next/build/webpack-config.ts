@@ -811,7 +811,8 @@ export default async function getBaseWebpackConfig(
         : []),
       !dev &&
         (webpack5Experiential
-          ? new webpack.ids.HashedModuleIdsPlugin()
+          ? // @ts-ignore
+            new webpack.ids.HashedModuleIdsPlugin()
           : new webpack.HashedModuleIdsPlugin()),
       !dev &&
         new webpack.IgnorePlugin(
@@ -928,8 +929,10 @@ export default async function getBaseWebpackConfig(
   })
 
   // in Webpack 5- commonJS output requires a library name
-  if (!isServer && webpack5Experiential)
+  if (!isServer && webpack5Experiential) {
+    // @ts-ignore
     webpackConfig.output.library = 'nextapp'
+  }
 
   if (typeof config.webpack === 'function') {
     webpackConfig = config.webpack(webpackConfig, {
