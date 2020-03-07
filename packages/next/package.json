@@ -143,7 +143,7 @@
     "url": "0.11.0",
     "use-subscription": "1.1.1",
     "watchpack": "2.0.0-beta.13",
-    "webpack": "git://github.com/webpack/webpack.git#dev-1",
+    "webpack": "^5.0.0-beta.14",
     "webpack-dev-middleware": "4.0.0-rc.1",
     "webpack-hot-middleware": "2.25.0",
     "webpack-sources": "1.4.3"

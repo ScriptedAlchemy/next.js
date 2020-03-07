@@ -41,7 +41,7 @@ import PagesManifestPlugin from './webpack/plugins/pages-manifest-plugin'
 import { ProfilingPlugin } from './webpack/plugins/profiling-plugin'
 import { ReactLoadablePlugin } from './webpack/plugins/react-loadable-plugin'
 import { ServerlessPlugin } from './webpack/plugins/serverless-plugin'
-import { TerserPlugin } from './webpack/plugins/terser-webpack-plugin/src/index'
+import { TerserPlugin } from './webpack/plugins/terser-webpack-plugin/src'
 import WebpackConformancePlugin, {
   MinificationConformanceCheck,
   ReactSyncScriptsConformanceCheck,
@@ -50,7 +50,7 @@ import WebpackConformancePlugin, {
 
 type ExcludesFalse = <T>(x: T | false) => x is T
 
-let NextEsmPlugin
+let NextEsmPlugin: any
 
 const webpack5Experiential = parseInt(require('webpack').version) === 5
 
@@ -812,7 +812,7 @@ export default async function getBaseWebpackConfig(
       !dev &&
         (webpack5Experiential
           ? new webpack.ids.HashedModuleIdsPlugin()
-          : new webepack.HashedModuleIdsPlugin()),
+          : new webpack.HashedModuleIdsPlugin()),
       !dev &&
         new webpack.IgnorePlugin(
           webpack5Experiential
