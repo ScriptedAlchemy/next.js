@@ -51,11 +51,6 @@ function requireUncached(module) {
   return require(module)
 }
 
-function requireUncached(module) {
-  delete require.cache[require.resolve(module)]
-  return require(module)
-}
-
 export async function loadComponents(
   distDir: string,
   buildId: string,

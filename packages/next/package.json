@@ -46,7 +46,8 @@
     "build": "taskr",
     "release": "taskr release",
     "prepublish": "npm run release && yarn types",
-    "types": "tsc --declaration --emitDeclarationOnly --declarationDir dist",
+    "types": "echo 0",
+    "typesReal": "tsc --declaration --emitDeclarationOnly --declarationDir dist",
     "typescript": "tsc --noEmit --declaration"
   },
   "taskr": {
