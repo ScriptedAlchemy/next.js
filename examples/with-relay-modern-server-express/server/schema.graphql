@@ -5,7 +5,12 @@ type Query {
 
 type Viewer implements Node {
   id: ID!
-  allBlogPosts(after: String, before: String, first: Int, last: Int): BlogPostConnection!
+  allBlogPosts(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): BlogPostConnection!
 }
 
 interface Node {
