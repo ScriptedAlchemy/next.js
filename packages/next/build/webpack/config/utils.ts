@@ -11,7 +11,6 @@ export type ConfigurationContext = {
   isClient: boolean
 
   assetPrefix: string
-  webpack5Experiential: boolean
 }
 
 export type ConfigurationFn = (
