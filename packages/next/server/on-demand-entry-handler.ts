@@ -1,5 +1,4 @@
 /* tslint:disable */
-
 import { EventEmitter } from 'events'
 import { IncomingMessage, ServerResponse } from 'http'
 import { join, posix } from 'path'

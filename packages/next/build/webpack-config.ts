@@ -913,7 +913,9 @@ export default async function getBaseWebpackConfig(
   }
 
   if (webpack5Experiential) {
+    // @ts-ignore
     delete webpackConfig.output.futureEmitAssets
+    // @ts-ignore
     delete webpackConfig.node.setImmediate
   }
 
