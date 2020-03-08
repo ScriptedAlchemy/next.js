@@ -557,8 +557,7 @@ export default class HotReloader {
     if (page !== '/_error' && BLOCKED_PAGES.indexOf(page) !== -1) {
       return
     }
-    // TODO: delete this line when re-working the codebase
-    if (page !== '/') await this.onDemandEntries.ensurePage('/')
+
     return this.onDemandEntries.ensurePage(page)
   }
 }
