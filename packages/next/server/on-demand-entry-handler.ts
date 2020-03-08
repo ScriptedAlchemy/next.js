@@ -22,6 +22,8 @@ const ADDED = Symbol('added')
 const BUILDING = Symbol('building')
 const BUILT = Symbol('built')
 
+const IS_WEBPACK_5 = true
+
 // Based on https://github.com/webpack/webpack/blob/master/lib/DynamicEntryPlugin.js#L29-L37
 function addEntry(
   compilation: webpack.compilation.Compilation,
@@ -67,15 +69,13 @@ export default function onDemandEntryHandler(
   let reloadCallbacks: EventEmitter | null = new EventEmitter()
 
   for (const compiler of compilers) {
-    compiler.hooks.make.tapPromise(
-      'NextJsOnDemandEntries',
-      (compilation: webpack.compilation.Compilation) => {
-        invalidator.startBuilding()
-
-        const allEntries = Object.keys(entries).map(async page => {
+    const getAllEntries = () =>
+      Object.keys(entries)
+        .map(async page => {
           if (compiler.name === 'client' && page.match(API_ROUTE)) {
             return
           }
+
           const { name, absolutePagePath } = entries[page]
           const pageExists = await isWriteable(absolutePagePath)
           if (!pageExists) {
@@ -83,21 +83,71 @@ export default function onDemandEntryHandler(
             delete entries[page]
             return
           }
-
           entries[page].status = BUILDING
-          return addEntry(compilation, compiler.context, name, [
-            compiler.name === 'client'
-              ? `next-client-pages-loader?${stringify({
-                  page,
-                  absolutePagePath,
-                })}!`
-              : absolutePagePath,
-          ])
-        })
 
-        return Promise.all(allEntries).catch(err => console.error(err))
-      }
-    )
+          return {
+            name,
+            absolutePagePath,
+            page,
+            loadAs:
+              compiler.name === 'client'
+                ? `next-client-pages-loader?${stringify({
+                    page,
+                    absolutePagePath,
+                  })}!`
+                : absolutePagePath,
+          }
+        })
+        .filter(Boolean)
+
+    IS_WEBPACK_5 &&
+      new DynamicEntryPlugin(compiler.context, async () => {
+        debugger
+
+        const allEntries = await Promise.all(getAllEntries()).reduce(
+          (result, { name, loadAs, absolutePagePath, page }) => {
+            console.log('w5 loading ', { name, loadAs, absolutePagePath, page })
+
+            return {
+              ...result,
+              [name]: {
+                import: loadAs,
+                filename: name,
+              },
+            }
+          },
+          {}
+        )
+
+        console.log('adding entry for ', { allEntries })
+
+        return allEntries
+      }).apply(compiler)
+
+    IS_WEBPACK_5 &&
+      compiler.hooks.make.intercept({
+        tap(name, type, fn) {
+          return (compilation, context) => {
+            console.log('running tap for ', name, { IS_WEBPACK_5 })
+            invalidator.startBuilding()
+            return fn(compilation, context)
+          }
+        },
+      })
+
+    !IS_WEBPACK_5 &&
+      compiler.hooks.make.tapPromise(
+        'NextJsOnDemandEntries',
+        (compilation: webpack.compilation.Compilation) => {
+          invalidator.startBuilding()
+
+          const allEntries = getAllEntries().map(({ name, loadAs }) => {
+            return addEntry(compilation, compiler.context, name, [loadAs])
+          })
+
+          return Promise.all(allEntries).catch(err => console.error(err))
+        }
+      )
   }
 
   function findHardFailedPages(errors: any[]) {
