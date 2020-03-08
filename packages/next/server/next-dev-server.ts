@@ -463,6 +463,7 @@ export default class DevServer extends Server {
     try {
       console.log('in try')
       console.log(pathname)
+      // this.hotReloader!.ensurePage(pathname);
       await this.hotReloader!.ensurePage(pathname).catch(async (err: Error) => {
         if ((err as any).code !== 'ENOENT') {
           throw err

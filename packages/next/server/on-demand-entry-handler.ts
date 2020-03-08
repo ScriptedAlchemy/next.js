@@ -122,6 +122,7 @@ export default function onDemandEntryHandler(
 
     IS_WEBPACK_5 &&
       compiler.hooks.make.intercept({
+        name: 'DynamicEntryPlugin',
         tap(name, type, fn) {
           return (compilation, context) => {
             console.log('running tap for ', name, { IS_WEBPACK_5 })
