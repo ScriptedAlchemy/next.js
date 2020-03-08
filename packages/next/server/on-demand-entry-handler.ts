@@ -70,54 +70,50 @@ export default function onDemandEntryHandler(
 
   for (const compiler of compilers) {
     const getAllEntries = () =>
-      Object.keys(entries)
-        .map(async page => {
-          if (compiler.name === 'client' && page.match(API_ROUTE)) {
-            return
-          }
+      Object.keys(entries).map(async page => {
+        if (compiler.name === 'client' && page.match(API_ROUTE)) {
+          return
+        }
 
-          const { name, absolutePagePath } = entries[page]
-          const pageExists = await isWriteable(absolutePagePath)
-          if (!pageExists) {
-            // page was removed
-            delete entries[page]
-            return
-          }
-          entries[page].status = BUILDING
+        const { name, absolutePagePath } = entries[page]
+        const pageExists = await isWriteable(absolutePagePath)
+        if (!pageExists) {
+          // page was removed
+          delete entries[page]
+          return
+        }
+        console.log('adding page', JSON.stringify(page))
+        entries[page].status = BUILDING
 
-          return {
-            name,
-            absolutePagePath,
-            page,
-            loadAs:
-              compiler.name === 'client'
-                ? `next-client-pages-loader?${stringify({
-                    page,
-                    absolutePagePath,
-                  })}!`
-                : absolutePagePath,
-          }
-        })
-        .filter(Boolean)
+        return {
+          name,
+          absolutePagePath,
+          page,
+          loadAs:
+            compiler.name === 'client'
+              ? `next-client-pages-loader?${stringify({
+                  page,
+                  absolutePagePath,
+                })}!`
+              : absolutePagePath,
+        }
+      })
 
     IS_WEBPACK_5 &&
       new DynamicEntryPlugin(compiler.context, async () => {
-        debugger
-
-        const allEntries = await Promise.all(getAllEntries()).reduce(
-          (result, { name, loadAs, absolutePagePath, page }) => {
+        const theEntries = await Promise.all(getAllEntries())
+        const allEntries = theEntries
+          .filter(Boolean)
+          .reduce((result, { name, loadAs, absolutePagePath, page }) => {
             console.log('w5 loading ', { name, loadAs, absolutePagePath, page })
 
             return {
               ...result,
               [name]: {
-                import: loadAs,
-                filename: name,
+                import: [loadAs],
               },
             }
-          },
-          {}
-        )
+          }, {})
 
         console.log('adding entry for ', { allEntries })
 
@@ -141,11 +137,13 @@ export default function onDemandEntryHandler(
         (compilation: webpack.compilation.Compilation) => {
           invalidator.startBuilding()
 
-          const allEntries = getAllEntries().map(({ name, loadAs }) => {
-            return addEntry(compilation, compiler.context, name, [loadAs])
-          })
-
-          return Promise.all(allEntries).catch(err => console.error(err))
+          return Promise.all(getAllEntries())
+            .then(entries => {
+              return entries.filter(Boolean).map(({ name, loadAs }) => {
+                return addEntry(compilation, compiler.context, name, [loadAs])
+              })
+            })
+            .catch(err => console.error(err))
         }
       )
   }
@@ -328,7 +326,7 @@ export default function onDemandEntryHandler(
 
       // Default the /_error route to the Next.js provided default page
       if (page === '/_error' && pagePath === null) {
-        pagePath = 'next/dist/pages/_error'
+        pagePath = '@module-federation/next/dist/pages/_error'
       }
 
       if (pagePath === null) {
