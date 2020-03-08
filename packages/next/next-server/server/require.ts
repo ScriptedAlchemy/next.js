@@ -17,10 +17,10 @@ export function pageNotFoundError(page: string): Error {
   return err
 }
 // hack for webpack 5 dev
-function requireUncached(module) {
-  delete require.cache[require.resolve(module)]
-  return require(module)
-}
+// function require(module) {
+//   delete require.cache[require.resolve(module)]
+//   return require(module)
+// }
 export function getPagePath(
   page: string,
   distDir: string,
@@ -32,7 +32,7 @@ export function getPagePath(
     serverless && !dev ? SERVERLESS_DIRECTORY : SERVER_DIRECTORY
   )
   const pagesManifest = webpack5Experiential
-    ? requireUncached(join(serverBuildPath, PAGES_MANIFEST))
+    ? require(join(serverBuildPath, PAGES_MANIFEST))
     : require(join(serverBuildPath, PAGES_MANIFEST))
 
   try {
@@ -63,5 +63,5 @@ export function requirePage(
   if (pagePath.endsWith('.html')) {
     return readFile(pagePath, 'utf8')
   }
-  return webpack5Experiential ? requireUncached(pagePath) : require(pagePath)
+  return webpack5Experiential ? require(pagePath) : require(pagePath)
 }
