@@ -63,5 +63,5 @@ export function requirePage(
   if (pagePath.endsWith('.html')) {
     return readFile(pagePath, 'utf8')
   }
-  return webpack5Experiential ? require(pagePath) : require(pagePath)
+  return require(pagePath)
 }

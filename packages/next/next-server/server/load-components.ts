@@ -93,7 +93,7 @@ export async function loadComponents(
   const { middleware: DocumentMiddleware } = DocumentMod
 
   // bust require cache on hmr
-  const AppMod = webpack5Experiential ? require(appPath) : require(appPath)
+  const AppMod = require(appPath)
 
   const ComponentMod = requirePage(pathname, distDir, serverless)
 
