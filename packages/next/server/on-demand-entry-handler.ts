@@ -40,6 +40,36 @@ function addEntry(
   })
 }
 
+const getAllEntries = (entries, compiler) =>
+  Object.keys(entries).map(async page => {
+    if (compiler.name === 'client' && page.match(API_ROUTE)) {
+      return
+    }
+
+    const { name, absolutePagePath } = entries[page]
+    const pageExists = await isWriteable(absolutePagePath)
+    if (!pageExists) {
+      // page was removed
+      delete entries[page]
+      return
+    }
+    console.log('adding page', JSON.stringify(page))
+    entries[page].status = BUILDING
+
+    return {
+      name,
+      absolutePagePath,
+      page,
+      loadAs:
+        compiler.name === 'client'
+          ? `next-client-pages-loader?${stringify({
+              page,
+              absolutePagePath,
+            })}!`
+          : absolutePagePath,
+    }
+  })
+
 export default function onDemandEntryHandler(
   devMiddleware: WebpackDevMiddleware.WebpackDevMiddleware,
   multiCompiler: webpack.MultiCompiler,
@@ -69,39 +99,9 @@ export default function onDemandEntryHandler(
   let reloadCallbacks: EventEmitter | null = new EventEmitter()
 
   for (const compiler of compilers) {
-    const getAllEntries = () =>
-      Object.keys(entries).map(async page => {
-        if (compiler.name === 'client' && page.match(API_ROUTE)) {
-          return
-        }
-
-        const { name, absolutePagePath } = entries[page]
-        const pageExists = await isWriteable(absolutePagePath)
-        if (!pageExists) {
-          // page was removed
-          delete entries[page]
-          return
-        }
-        console.log('adding page', JSON.stringify(page))
-        entries[page].status = BUILDING
-
-        return {
-          name,
-          absolutePagePath,
-          page,
-          loadAs:
-            compiler.name === 'client'
-              ? `next-client-pages-loader?${stringify({
-                  page,
-                  absolutePagePath,
-                })}!`
-              : absolutePagePath,
-        }
-      })
-
     IS_WEBPACK_5 &&
       new DynamicEntryPlugin(compiler.context, async () => {
-        const theEntries = await Promise.all(getAllEntries())
+        const theEntries = await Promise.all(getAllEntries(entries, compiler))
         const allEntries = theEntries
           .filter(Boolean)
           .reduce((result, { name, loadAs, absolutePagePath, page }) => {
@@ -125,7 +125,9 @@ export default function onDemandEntryHandler(
         tap(name, type, fn) {
           return (compilation, context) => {
             console.log('running tap for ', name, { IS_WEBPACK_5 })
-            invalidator.startBuilding()
+            if (name === 'DynamicEntryPlugin') {
+              invalidator.startBuilding()
+            }
             return fn(compilation, context)
           }
         },
@@ -137,7 +139,7 @@ export default function onDemandEntryHandler(
         (compilation: webpack.compilation.Compilation) => {
           invalidator.startBuilding()
 
-          return Promise.all(getAllEntries())
+          return Promise.all(getAllEntries(entries, compiler))
             .then(entries => {
               return entries.filter(Boolean).map(({ name, loadAs }) => {
                 return addEntry(compilation, compiler.context, name, [loadAs])
