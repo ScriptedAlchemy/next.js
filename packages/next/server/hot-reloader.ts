@@ -557,7 +557,6 @@ export default class HotReloader {
     if (page !== '/_error' && BLOCKED_PAGES.indexOf(page) !== -1) {
       return
     }
-
     return this.onDemandEntries.ensurePage(page)
   }
 }
