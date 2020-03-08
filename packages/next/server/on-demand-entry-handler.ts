@@ -6,7 +6,7 @@ import { parse } from 'url'
 import webpack from 'webpack'
 import WebpackDevMiddleware from 'webpack-dev-middleware'
 import DynamicEntryPlugin from 'webpack/lib/DynamicEntryPlugin'
-import getNormalizedWebpackOptions from 'webpack/lib/config/normalization'
+
 import { isWriteable } from '../build/is-writeable'
 import * as Log from '../build/output/log'
 import { API_ROUTE } from '../lib/constants'
@@ -17,7 +17,7 @@ import {
 import { normalizePagePath } from '../next-server/server/normalize-page-path'
 import { pageNotFoundError } from '../next-server/server/require'
 import { findPageFile } from './lib/find-page-file'
-import NewOnDemandEntryHandler from './on-demand-entry-handler-wp5'
+
 const ADDED = Symbol('added')
 const BUILDING = Symbol('building')
 const BUILT = Symbol('built')
@@ -30,57 +30,12 @@ function addEntry(
   entry: string[]
 ) {
   return new Promise((resolve, reject) => {
-    console.log('name', name)
-    console.log('entry', entry)
     const dep = DynamicEntryPlugin.createDependency(entry, name)
     compilation.addEntry(context, dep, name, (err: Error) => {
       if (err) return reject(err)
       resolve()
     })
   })
-}
-
-const getNormalizedEntryStatic = entry => {
-  if (typeof entry === 'string') {
-    return {
-      main: {
-        import: [entry],
-      },
-    }
-  }
-  if (Array.isArray(entry)) {
-    return {
-      main: {
-        import: entry,
-      },
-    }
-  }
-  /** @type {EntryStaticNormalized} */
-  const result = {}
-  for (const key of Object.keys(entry)) {
-    const value = entry[key]
-    if (typeof value === 'string') {
-      result[key] = {
-        import: [value],
-      }
-    } else if (Array.isArray(value)) {
-      result[key] = {
-        import: value,
-      }
-    } else {
-      result[key] = {
-        import:
-          value.import &&
-          (Array.isArray(value.import) ? value.import : [value.import]),
-        filename: value.filename,
-        dependOn:
-          value.dependOn &&
-          (Array.isArray(value.dependOn) ? value.dependOn : [value.dependOn]),
-        library: value.library,
-      }
-    }
-  }
-  return result
 }
 
 export default function onDemandEntryHandler(
@@ -112,9 +67,12 @@ export default function onDemandEntryHandler(
   let reloadCallbacks: EventEmitter | null = new EventEmitter()
 
   for (const compiler of compilers) {
-    const allEntries = () =>
-      Promise.all(
-        Object.keys(entries).map(async page => {
+    compiler.hooks.make.tapPromise(
+      'NextJsOnDemandEntries',
+      (compilation: webpack.compilation.Compilation) => {
+        invalidator.startBuilding()
+
+        const allEntries = Object.keys(entries).map(async page => {
           if (compiler.name === 'client' && page.match(API_ROUTE)) {
             return
           }
@@ -127,23 +85,19 @@ export default function onDemandEntryHandler(
           }
 
           entries[page].status = BUILDING
-
-          return {
-            [name]: [
-              compiler.name === 'client'
-                ? `next-client-pages-loader?${stringify({
-                    page,
-                    absolutePagePath,
-                  })}!`
-                : absolutePagePath,
-            ],
-          }
+          return addEntry(compilation, compiler.context, name, [
+            compiler.name === 'client'
+              ? `next-client-pages-loader?${stringify({
+                  page,
+                  absolutePagePath,
+                })}!`
+              : absolutePagePath,
+          ])
         })
-      ).catch(err => console.error(err))
 
-    new NewOnDemandEntryHandler(compiler.context, allEntries).apply(compiler, {
-      invalidator,
-    })
+        return Promise.all(allEntries).catch(err => console.error(err))
+      }
+    )
   }
 
   function findHardFailedPages(errors: any[]) {
