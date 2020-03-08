@@ -1,4 +1,3 @@
-/* tslint:disable */
 import { EventEmitter } from 'events'
 import { IncomingMessage, ServerResponse } from 'http'
 import { join, posix } from 'path'
@@ -6,9 +5,8 @@ import { stringify } from 'querystring'
 import { parse } from 'url'
 import webpack from 'webpack'
 import WebpackDevMiddleware from 'webpack-dev-middleware'
-import EntryPlugin from 'webpack/lib/EntryPlugin'
-import EntryOptionPlugin from 'webpack/lib/EntryOptionPlugin'
-import EntryDependency from 'webpack/lib/dependencies/EntryDependency'
+import DynamicEntryPlugin from 'webpack/lib/DynamicEntryPlugin'
+
 import { isWriteable } from '../build/is-writeable'
 import * as Log from '../build/output/log'
 import { API_ROUTE } from '../lib/constants'
@@ -26,42 +24,18 @@ const BUILT = Symbol('built')
 
 // Based on https://github.com/webpack/webpack/blob/master/lib/DynamicEntryPlugin.js#L29-L37
 function addEntry(
-  compiler,
-  compilation,
+  compilation: webpack.compilation.Compilation,
   context: string,
-  othername: string,
+  name: string,
   entry: string[]
 ) {
-  return Promise.resolve(entry)
-    .then(entry => {
-      const promises = []
-      for (const name of Object.keys(entry)) {
-        const desc = { import: entry[name] }
-        const options = EntryOptionPlugin.entryDescriptionToOptions(
-          compiler,
-          name,
-          desc
-        )
-
-        for (const entry of desc.import) {
-          promises.push(
-            new Promise((resolve, reject) => {
-              compilation.addEntry(
-                context,
-                EntryPlugin.createDependency(entry, options),
-                options,
-                err => {
-                  if (err) return reject(err)
-                  resolve()
-                }
-              )
-            })
-          )
-        }
-      }
-      return Promise.all(promises)
+  return new Promise((resolve, reject) => {
+    const dep = DynamicEntryPlugin.createDependency(entry, name)
+    compilation.addEntry(context, dep, name, (err: Error) => {
+      if (err) return reject(err)
+      resolve()
     })
-    .then(x => {})
+  })
 }
 
 export default function onDemandEntryHandler(
@@ -93,16 +67,6 @@ export default function onDemandEntryHandler(
   let reloadCallbacks: EventEmitter | null = new EventEmitter()
 
   for (const compiler of compilers) {
-    compiler.hooks.compilation.tap(
-      'DynamicEntryPlugin',
-      (compilation, { normalModuleFactory }) => {
-        compilation.dependencyFactories.set(
-          EntryDependency,
-          normalModuleFactory
-        )
-      }
-    )
-
     compiler.hooks.make.tapPromise(
       'NextJsOnDemandEntries',
       (compilation: webpack.compilation.Compilation) => {
@@ -121,16 +85,14 @@ export default function onDemandEntryHandler(
           }
 
           entries[page].status = BUILDING
-          return addEntry(compiler, compilation, compiler.context, name, {
-            [name]: [
-              compiler.name === 'client'
-                ? `next-client-pages-loader?${stringify({
-                    page,
-                    absolutePagePath,
-                  })}!`
-                : absolutePagePath,
-            ],
-          })
+          return addEntry(compilation, compiler.context, name, [
+            compiler.name === 'client'
+              ? `next-client-pages-loader?${stringify({
+                  page,
+                  absolutePagePath,
+                })}!`
+              : absolutePagePath,
+          ])
         })
 
         return Promise.all(allEntries).catch(err => console.error(err))
@@ -333,9 +295,7 @@ export default function onDemandEntryHandler(
 
       const bundleFile = `${normalizePagePath(pageUrl)}.js`
       const name = join('static', buildId, 'pages', bundleFile)
-      const absolutePagePath = pagePath.startsWith(
-        '@module-federation/next/dist/pages'
-      )
+      const absolutePagePath = pagePath.startsWith('next/dist/pages')
         ? require.resolve(pagePath)
         : join(pagesDir, pagePath)
 
