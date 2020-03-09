@@ -57,6 +57,12 @@ export type LoadComponentsReturnType = {
   unstable_getStaticPaths?: Unstable_getStaticPaths
   unstable_getServerProps?: Unstable_getServerProps
 }
+const webpack5Experiential = parseInt(require('webpack').version) === 5
+
+function requireUncached(module) {
+  delete require.cache[require.resolve(module)]
+  return require(module)
+}
 
 export async function loadComponents(
   distDir: string,
@@ -104,7 +110,10 @@ export async function loadComponents(
     Document,
     App,
   ] = await Promise.all([
-    require(join(distDir, BUILD_MANIFEST)),
+    // bust require cache on hmr
+    webpack5Experiential && process.env.NODE_ENV !== 'production'
+      ? requireUncached(join(distDir, BUILD_MANIFEST))
+      : require(join(distDir, BUILD_MANIFEST)),
     require(join(distDir, REACT_LOADABLE_MANIFEST)),
     interopDefault(ComponentMod),
     interopDefault(DocumentMod),

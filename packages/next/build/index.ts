@@ -6,7 +6,7 @@ import findUp from 'find-up'
 import fs from 'fs'
 import Worker from 'jest-worker'
 import mkdirpOrig from 'mkdirp'
-import nanoid from 'next/dist/compiled/nanoid/index.js'
+import nanoid from '@module-federation/next/dist/compiled/nanoid/index.js'
 import path from 'path'
 import { pathToRegexp } from 'path-to-regexp'
 import { promisify } from 'util'
@@ -365,9 +365,10 @@ export default async function build(dir: string, conf = null): Promise<void> {
   if (buildSpinner) {
     buildSpinner.stopAndPersist()
   }
-  console.log()
-
-  result = formatWebpackMessages(result)
+  console.log('There were errors!')
+  console.log(result)
+  console.log(JSON.stringify(result, null, 2))
+  // result = formatWebpackMessages(result)
 
   if (result.errors.length > 0) {
     // Only keep the first error. Others are often indicative
@@ -690,6 +691,7 @@ export default async function build(dir: string, conf = null): Promise<void> {
       },
       exportTrailingSlash: false,
     }
+
     await exportApp(dir, exportOptions, exportConfig)
 
     // remove server bundles that were exported
