@@ -251,7 +251,8 @@ export default async function getBaseWebpackConfig(
       // Which makes bundles slightly smaller, but also skips parsing a module that we know will result in this alias
       'next/head': '@module-federation/next/dist/next-server/lib/head.js',
       'next/router': '@module-federation/next/dist/client/router.js',
-      'next/config': '@module-federation/next/dist/next-server/lib/runtime-config.js',
+      'next/config':
+        '@module-federation/next/dist/next-server/lib/runtime-config.js',
       'next/dynamic': '@module-federation/next/dist/next-server/lib/dynamic.js',
       next: NEXT_PROJECT_ROOT,
       [PAGES_DIR_ALIAS]: pagesDir,
@@ -931,7 +932,9 @@ export default async function getBaseWebpackConfig(
   // in Webpack 5- var larbraryType output requires a name, will default to package.json name soon
   if (!isServer && webpack5Experiential) {
     // @ts-ignore
-    webpackConfig.output.library = 'nextapp'
+    webpackConfig.output.library = webpackConfig.output.library
+      ? webpackConfig.output.library
+      : 'nextapp'
   }
 
   if (typeof config.webpack === 'function') {
