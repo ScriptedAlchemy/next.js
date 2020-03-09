@@ -549,7 +549,10 @@ export default class HotReloader {
     if (page !== '/_error' && BLOCKED_PAGES.indexOf(page) !== -1) {
       return
     }
-    if (page !== '/') await this.onDemandEntries.ensurePage('/')
+    if (!this.patchedHMR) {
+      this.onDemandEntries.ensurePage('/')
+      this.patchedHMR = true
+    }
     return this.onDemandEntries.ensurePage(page)
   }
 }
