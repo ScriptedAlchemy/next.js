@@ -323,6 +323,7 @@ export default async function build(dir: string, conf = null): Promise<void> {
   ])
 
   const clientConfig = configs[0]
+
   if (
     clientConfig.optimization &&
     (clientConfig.optimization.minimize !== true ||
@@ -690,6 +691,7 @@ export default async function build(dir: string, conf = null): Promise<void> {
       },
       exportTrailingSlash: false,
     }
+
     await exportApp(dir, exportOptions, exportConfig)
 
     // remove server bundles that were exported
