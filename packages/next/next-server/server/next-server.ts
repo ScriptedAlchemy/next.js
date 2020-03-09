@@ -803,7 +803,6 @@ export default class Server {
           pagePath!,
           !this.renderOpts.dev && this._isLikeServerless
         )
-        console.log(components)
         return {
           components,
           query: {
