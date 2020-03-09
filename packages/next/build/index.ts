@@ -327,6 +327,7 @@ export default async function build(dir: string, conf = null): Promise<void> {
   ])
 
   const clientConfig = configs[0]
+
   if (
     clientConfig.optimization &&
     (clientConfig.optimization.minimize !== true ||
