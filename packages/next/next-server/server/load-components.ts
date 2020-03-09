@@ -14,7 +14,7 @@ import {
   GetStaticPaths,
   GetServerSideProps,
   GetStaticProps,
-} from 'next/types'
+} from '@module-federation/next/types'
 
 export function interopDefault(mod: any) {
   return mod.default || mod
@@ -43,7 +43,7 @@ export type LoadComponentsReturnType = {
 }
 const webpack5Experiential = parseInt(require('webpack').version) === 5
 
-function requireUncached(module) {
+function requireUncached(module: any) {
   delete require.cache[require.resolve(module)]
   return require(module)
 }
