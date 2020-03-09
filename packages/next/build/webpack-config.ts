@@ -250,7 +250,8 @@ export default async function getBaseWebpackConfig(
       // Which makes bundles slightly smaller, but also skips parsing a module that we know will result in this alias
       'next/head': '@module-federation/next/dist/next-server/lib/head.js',
       'next/router': '@module-federation/next/dist/client/router.js',
-      'next/config': '@module-federation/next/dist/next-server/lib/runtime-config.js',
+      'next/config':
+        '@module-federation/next/dist/next-server/lib/runtime-config.js',
       'next/dynamic': '@module-federation/next/dist/next-server/lib/dynamic.js',
       next: NEXT_PROJECT_ROOT,
       [PAGES_DIR_ALIAS]: pagesDir,
@@ -558,9 +559,9 @@ export default async function getBaseWebpackConfig(
       checkWasmTypes: false,
       nodeEnv: false,
       splitChunks: isServer ? false : splitChunksConfig,
-      runtimeChunk: isServer
-        ? undefined
-        : { name: CLIENT_STATIC_FILES_RUNTIME_WEBPACK },
+      // runtimeChunk: isServer
+      //   ? undefined
+      //   : { name: CLIENT_STATIC_FILES_RUNTIME_WEBPACK },
       minimize: !(dev || isServer),
       minimizer: [
         // Minify JavaScript
