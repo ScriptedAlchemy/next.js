@@ -110,8 +110,8 @@ export async function loadComponents(
     App,
   ] = await Promise.all([
     // bust require cache on hmr
-    requireUncached(join(distDir, BUILD_MANIFEST)),
-    requireUncached(join(distDir, REACT_LOADABLE_MANIFEST)),
+    require(join(distDir, BUILD_MANIFEST)),
+    require(join(distDir, REACT_LOADABLE_MANIFEST)),
     interopDefault(ComponentMod),
     interopDefault(DocumentMod),
     interopDefault(AppMod),
