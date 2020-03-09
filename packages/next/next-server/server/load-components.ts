@@ -95,12 +95,10 @@ export async function loadComponents(
     '_app'
   )
 
-  // bust require cache on hmr
-  const DocumentMod = requireUncached(documentPath)
+  const DocumentMod = require(documentPath)
   const { middleware: DocumentMiddleware } = DocumentMod
 
-  // bust require cache on hmr
-  const AppMod = requireUncached(appPath)
+  const AppMod = require(appPath)
 
   const ComponentMod = requirePage(pathname, distDir, serverless)
 
