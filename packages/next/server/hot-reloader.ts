@@ -23,6 +23,8 @@ import errorOverlayMiddleware from './lib/error-overlay-middleware'
 import { findPageFile } from './lib/find-page-file'
 import onDemandEntryHandler, { normalizePage } from './on-demand-entry-handler'
 
+const webpack5Experiential = parseInt(require('webpack').version) === 5
+
 export async function renderScriptError(res: ServerResponse, error: Error) {
   // Asks CDNs and others to not to cache the errored page
   res.setHeader(
@@ -130,6 +132,7 @@ export default class HotReloader {
   private prevChunkNames?: Set<any>
   private onDemandEntries: any
   private previewProps: __ApiPreviewProps
+  private patchedHMR: boolean
 
   constructor(
     dir: string,
@@ -154,6 +157,7 @@ export default class HotReloader {
     this.initialized = false
     this.stats = null
     this.serverPrevDocumentHash = null
+    this.patchedHMR = false
 
     this.config = config
     this.previewProps = previewProps
@@ -451,10 +455,16 @@ export default class HotReloader {
 
     let webpackDevMiddlewareConfig = {
       publicPath: `/_next/static/webpack`,
-      // noInfo: true,
-      // logLevel: 'silent',
-      // watchOptions: { ignored },
       writeToDisk: true,
+    }
+
+    if (!webpack5Experiential) {
+      // webpack-dev-middleware@4 does not accept these options
+      Object.assign(webpackDevMiddlewareConfig, {
+        noInfo: true,
+        logLevel: 'silent',
+        watchOptions: { ignored },
+      })
     }
 
     if (this.config.webpackDevMiddleware) {
@@ -549,7 +559,7 @@ export default class HotReloader {
     if (page !== '/_error' && BLOCKED_PAGES.indexOf(page) !== -1) {
       return
     }
-    if (!this.patchedHMR) {
+    if (!this.patchedHMR && webpack5Experiential) {
       this.onDemandEntries.ensurePage('/')
       this.patchedHMR = true
     }
