@@ -29,7 +29,7 @@ export function getPagePath(
     distDir,
     serverless && !dev ? SERVERLESS_DIRECTORY : SERVER_DIRECTORY
   )
-  const pagesManifest = requireUncached(join(serverBuildPath, PAGES_MANIFEST))
+  const pagesManifest = require(join(serverBuildPath, PAGES_MANIFEST))
 
   try {
     page = normalizePagePath(page)
@@ -59,5 +59,5 @@ export function requirePage(
   if (pagePath.endsWith('.html')) {
     return readFile(pagePath, 'utf8')
   }
-  return requireUncached(pagePath)
+  return require(pagePath)
 }
