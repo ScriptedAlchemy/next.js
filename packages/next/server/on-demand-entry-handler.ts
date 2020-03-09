@@ -31,7 +31,6 @@ function addEntry(
   othername: string,
   entry: string[]
 ) {
-  console.log('othername', othername)
   return Promise.resolve(entry)
     .then(entry => {
       const promises = []
@@ -333,7 +332,9 @@ export default function onDemandEntryHandler(
 
       const bundleFile = `${normalizePagePath(pageUrl)}.js`
       const name = join('static', buildId, 'pages', bundleFile)
-      const absolutePagePath = pagePath.startsWith('@module-federation/next/dist/pages')
+      const absolutePagePath = pagePath.startsWith(
+        '@module-federation/next/dist/pages'
+      )
         ? require.resolve(pagePath)
         : join(pagesDir, pagePath)
 
