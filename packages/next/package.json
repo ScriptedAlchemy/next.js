@@ -1,6 +1,6 @@
 {
   "name": "next",
-  "version": "9.2.2-beta.15",
+  "version": "9.3.0-beta.0",
   "description": "Next.js upgraded to Webpack 5",
   "main": "./dist/server/next.js",
   "license": "MIT",
@@ -46,8 +46,8 @@
     "build": "taskr",
     "release": "taskr release",
     "prepublish": "npm run release && yarn types",
-    "types": "echo 0",
-    "typees": "tsc --declaration --emitDeclarationOnly --declarationDir dist",
+    "types": "echo  \"broken TS need to fix\"",
+    "typesReal": "tsc --declaration --emitDeclarationOnly --declarationDir dist",
     "typescript": "tsc --noEmit --declaration"
   },
   "taskr": {

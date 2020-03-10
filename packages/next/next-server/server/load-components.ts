@@ -97,10 +97,7 @@ export async function loadComponents(
     Document,
     App,
   ] = await Promise.all([
-    // bust require cache on hmr
-    webpack5Experiential && process.env.NODE_ENV !== 'production'
-      ? requireUncached(join(distDir, BUILD_MANIFEST))
-      : require(join(distDir, BUILD_MANIFEST)),
+    require(join(distDir, BUILD_MANIFEST)),
     require(join(distDir, REACT_LOADABLE_MANIFEST)),
     interopDefault(ComponentMod),
     interopDefault(DocumentMod),
