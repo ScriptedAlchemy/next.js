@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 import gzipSize from 'gzip-size'
-import textTable from '@module-federation/next/dist/compiled/text-table'
+import textTable from 'next/dist/compiled/text-table'
 import path from 'path'
 import { isValidElementType } from 'react-is'
 import stripAnsi from 'strip-ansi'

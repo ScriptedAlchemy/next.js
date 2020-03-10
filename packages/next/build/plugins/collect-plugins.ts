@@ -2,7 +2,7 @@ import findUp from 'find-up'
 import fs from 'fs'
 import path from 'path'
 import { promisify } from 'util'
-import resolve from '@module-federation/next/dist/compiled/resolve/index.js'
+import resolve from 'next/dist/compiled/resolve/index.js'
 import { execOnce } from '../../next-server/lib/utils'
 
 const readdir = promisify(fs.readdir)
