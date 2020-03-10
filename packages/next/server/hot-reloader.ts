@@ -559,10 +559,10 @@ export default class HotReloader {
     if (page !== '/_error' && BLOCKED_PAGES.indexOf(page) !== -1) {
       return
     }
-    if (!this.patchedHMR && webpack5Experiential) {
-      this.onDemandEntries.ensurePage('/')
-      this.patchedHMR = true
-    }
+    // if (!this.patchedHMR && webpack5Experiential) {
+    //   this.onDemandEntries.ensurePage('/')
+    //   this.patchedHMR = true
+    // }
     return this.onDemandEntries.ensurePage(page)
   }
 }

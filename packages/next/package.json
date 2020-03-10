@@ -1,5 +1,5 @@
 {
-  "name": "@module-federation/next",
+  "name": "next",
   "version": "9.2.2-beta.15",
   "description": "Next.js upgraded to Webpack 5",
   "main": "./dist/server/next.js",

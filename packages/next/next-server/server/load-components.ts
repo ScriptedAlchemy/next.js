@@ -14,7 +14,7 @@ import {
   GetStaticPaths,
   GetServerSideProps,
   GetStaticProps,
-} from '@module-federation/next/types'
+} from 'next/types'
 
 export function interopDefault(mod: any) {
   return mod.default || mod
