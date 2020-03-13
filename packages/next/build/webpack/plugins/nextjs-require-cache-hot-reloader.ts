@@ -25,6 +25,10 @@ export class NextJsRequireCacheHotReloader implements Plugin {
         const { assets, outputOptions } = compilation
         const outputPath = outputOptions.path
 
+        // if (!assets['build-manifest.json'] && webpack5Experiential) {
+        //   deleteCache(path.resolve(outputPath, '../', 'build-manifest.json'))
+        // }
+
         if (this.prevAssets) {
           for (const f of Object.keys(assets)) {
             if (webpack5Experiential) {
@@ -36,7 +40,7 @@ export class NextJsRequireCacheHotReloader implements Plugin {
           for (const f of Object.keys(this.prevAssets)) {
             if (!assets[f]) {
               if (webpack5Experiential) {
-                deleteCache(path.resolve(this.prevAssets, f))
+                deleteCache(path.resolve(outputPath, f))
               } else {
                 deleteCache(this.prevAssets[f].existsAt)
               }
