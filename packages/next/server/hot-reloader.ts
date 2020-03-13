@@ -426,6 +426,7 @@ export default class HotReloader {
               let page =
                 '/' + ROUTE_NAME_REGEX.exec(addedPage)![1].replace(/\\/g, '/')
               page = page === '/index' ? '/' : page
+
               this.send('addedPage', page)
             }
           }
