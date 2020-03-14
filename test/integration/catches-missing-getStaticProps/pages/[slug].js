@@ -1,5 +1,5 @@
-export async function getStaticPaths() {
-  return { paths: ['/hello', '/world'], fallback: true }
+export async function unstable_getStaticPaths() {
+  return { paths: ['/hello', '/world'] }
 }
 
 export default () => <p>something is missing 🤔</p>

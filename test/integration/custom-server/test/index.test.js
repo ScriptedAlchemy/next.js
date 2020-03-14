@@ -3,7 +3,6 @@
 import webdriver from 'next-webdriver'
 import { join } from 'path'
 import getPort from 'get-port'
-import cheerio from 'cheerio'
 import clone from 'clone'
 import {
   initNextServerScript,
@@ -89,12 +88,6 @@ describe('Custom Server', () => {
     it('should render nested index', async () => {
       const html = await renderViaHTTP(appPort, '/dashboard')
       expect(html).toMatch(/made it to dashboard/)
-    })
-
-    it('should contain customServer in NEXT_DATA', async () => {
-      const html = await renderViaHTTP(appPort, '/')
-      const $ = cheerio.load(html)
-      expect(JSON.parse($('#__NEXT_DATA__').text()).customServer).toBe(true)
     })
   })
 

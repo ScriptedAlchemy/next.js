@@ -1,17 +1,18 @@
 import React from 'react'
 import Link from 'next/link'
 
-export async function getStaticPaths() {
+// eslint-disable-next-line camelcase
+export async function unstable_getStaticPaths() {
   return {
     paths: [
       '/blog/post-1/comment-1',
       { params: { post: 'post-2', comment: 'comment-2' } },
     ],
-    fallback: true,
   }
 }
 
-export async function getStaticProps({ params }) {
+// eslint-disable-next-line camelcase
+export async function unstable_getStaticProps({ params }) {
   return {
     props: {
       post: params.post,

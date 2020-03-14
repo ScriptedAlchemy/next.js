@@ -73,11 +73,7 @@ module.exports = {
         },
         {
           source: '/api-hello-param/:name',
-          destination: '/api/hello?hello=:name',
-        },
-        {
-          source: '/api-dynamic-param/:name',
-          destination: '/api/dynamic/:name?hello=:name',
+          destination: '/api/hello?name=:name',
         },
         {
           source: '/:path/post-321',
