@@ -76,11 +76,7 @@ class CustomEnvironment extends NodeEnvironment {
       this.server.close()
     }
     if (this.global.wd) {
-      try {
-        await this.global.wd.quit()
-      } catch (err) {
-        console.log(`Failed to quit webdriver instance`, err)
-      }
+      await this.global.wd.quit()
     }
     // must come after wd.quit()
     if (this.seleniumServer) {

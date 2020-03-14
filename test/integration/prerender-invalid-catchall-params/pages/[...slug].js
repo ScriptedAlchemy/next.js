@@ -1,10 +1,12 @@
 import React from 'react'
 
-export async function getStaticPaths() {
-  return { paths: [{ params: { slug: 'hello' } }], fallback: true }
+// eslint-disable-next-line camelcase
+export async function unstable_getStaticPaths() {
+  return { paths: [{ params: { slug: 'hello' } }] }
 }
 
-export async function getStaticProps({ params }) {
+// eslint-disable-next-line camelcase
+export async function unstable_getStaticProps({ params }) {
   return {
     props: {
       post: params.post,

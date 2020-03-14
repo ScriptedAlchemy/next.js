@@ -2,7 +2,8 @@ import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 
-export async function getStaticProps({ params }) {
+// eslint-disable-next-line camelcase
+export async function unstable_getStaticProps({ params }) {
   return {
     props: {
       world: 'world',

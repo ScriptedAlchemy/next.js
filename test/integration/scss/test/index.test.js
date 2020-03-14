@@ -220,7 +220,7 @@ describe('SCSS Support', () => {
       expect(
         cssContent.replace(/\/\*.*?\*\//g, '').trim()
       ).toMatchInlineSnapshot(
-        `".redText ::-webkit-input-placeholder{color:red}.redText ::-moz-placeholder{color:red}.redText :-ms-input-placeholder{color:red}.redText ::-ms-input-placeholder{color:red}.redText ::placeholder{color:red}.flex-parsing{flex:0 0 calc(50% - var(--vertical-gutter))}"`
+        `".redText ::-webkit-input-placeholder{color:red}.redText ::-moz-placeholder{color:red}.redText :-ms-input-placeholder{color:red}.redText ::-ms-input-placeholder{color:red}.redText ::placeholder{color:red}"`
       )
 
       // Contains a source map
@@ -241,17 +241,13 @@ describe('SCSS Support', () => {
       const { version, mappings, sourcesContent } = JSON.parse(cssMapContent)
       expect({ version, mappings, sourcesContent }).toMatchInlineSnapshot(`
         Object {
-          "mappings": "AACA,qCAEI,SAHK,CACT,4BAEI,SAHK,CACT,gCAEI,SAHK,CACT,iCAEI,SAHK,CACT,uBAEI,SAHK,CAIN,cAID,2CAA4C",
+          "mappings": "AACA,qCAEI,SAHK,CACT,4BAEI,SAHK,CACT,gCAEI,SAHK,CACT,iCAEI,SAHK,CACT,uBAEI,SAHK",
           "sourcesContent": Array [
             "$var: red;
         .redText {
           ::placeholder {
             color: $var;
           }
-        }
-
-        .flex-parsing {
-          flex: 0 0 calc(50% - var(--vertical-gutter));
         }
         ",
           ],
