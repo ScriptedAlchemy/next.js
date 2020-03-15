@@ -133,7 +133,7 @@ function formatWebpackMessages(json) {
   })
   const result = { errors: formattedErrors, warnings: formattedWarnings }
   if (result.errors.some(isLikelyASyntaxError)) {
-    console.log(result);
+    console.log(result)
     // If there are any syntax errors, show just them.
     result.errors = result.errors.filter(isLikelyASyntaxError)
   }

@@ -252,8 +252,7 @@ export default async function getBaseWebpackConfig(
       // Which makes bundles slightly smaller, but also skips parsing a module that we know will result in this alias
       'next/head': 'next/dist/next-server/lib/head.js',
       'next/router': 'next/dist/client/router.js',
-      'next/config':
-        'next/dist/next-server/lib/runtime-config.js',
+      'next/config': 'next/dist/next-server/lib/runtime-config.js',
       'next/dynamic': 'next/dist/next-server/lib/dynamic.js',
       next: NEXT_PROJECT_ROOT,
       [PAGES_DIR_ALIAS]: pagesDir,
@@ -261,7 +260,7 @@ export default async function getBaseWebpackConfig(
       ...getOptimizedAliases(isServer),
     },
     mainFields: isServer ? ['main', 'module'] : ['browser', 'module', 'main'],
-    plugins: [PnpWebpackPlugin],
+    plugins: !webpack5Experiential ? [PnpWebpackPlugin] : [],
   }
 
   const webpackMode = dev ? 'development' : 'production'
@@ -556,7 +555,7 @@ export default async function getBaseWebpackConfig(
           // When the 'serverless' target is used all node_modules will be compiled into the output bundles
           // So that the 'serverless' bundles have 0 runtime dependencies
           '@ampproject/toolbox-optimizer', // except this one
-        ],
+        ].concat(webpack5Experiential ? ['enhanced-resolve'] : []),
     optimization: {
       checkWasmTypes: false,
       nodeEnv: false,
@@ -620,8 +619,12 @@ export default async function getBaseWebpackConfig(
         return '[name]'
       },
       libraryTarget: isServer ? 'commonjs2' : 'var',
-      hotUpdateChunkFilename: 'static/webpack/[id].[hash].hot-update.js',
-      hotUpdateMainFilename: 'static/webpack/[hash].hot-update.json',
+      hotUpdateChunkFilename: webpack5Experiential
+        ? 'static/webpack/[id].[fullhash].hot-update.js'
+        : 'static/webpack/[id].[hash].hot-update.js',
+      hotUpdateMainFilename: webpack5Experiential
+        ? 'static/webpack/[fullhash].hot-update.json'
+        : 'static/webpack/[hash].hot-update.json',
       // This saves chunks with the name given via `import()`
       chunkFilename: isServer
         ? `${dev ? '[name]' : '[name].[contenthash]'}.js`
@@ -653,7 +656,7 @@ export default async function getBaseWebpackConfig(
         'node_modules',
         ...nodePathList, // Support for NODE_PATH environment variable
       ],
-      plugins: [PnpWebpackPlugin],
+      plugins: webpack5Experiential ? [] : [PnpWebpackPlugin],
     },
     module: {
       rules: [
@@ -851,22 +854,22 @@ export default async function getBaseWebpackConfig(
         new ProfilingPlugin({
           tracer,
         }),
-      !isServer &&
-        useTypeScript &&
-        !ignoreTypeScriptErrors &&
-        new ForkTsCheckerWebpackPlugin(
-          PnpWebpackPlugin.forkTsCheckerOptions({
-            typescript: typeScriptPath,
-            async: dev,
-            useTypescriptIncrementalApi: true,
-            checkSyntacticErrors: true,
-            tsconfig: tsConfigPath,
-            reportFiles: ['**', '!**/__tests__/**', '!**/?(*.)(spec|test).*'],
-            compilerOptions: { isolatedModules: true, noEmit: true },
-            silent: true,
-            formatter: 'codeframe',
-          })
-        ),
+      // !isServer &&
+      //   useTypeScript &&
+      //   !ignoreTypeScriptErrors &&
+      //   new ForkTsCheckerWebpackPlugin(
+      //     PnpWebpackPlugin.forkTsCheckerOptions({
+      //       typescript: typeScriptPath,
+      //       async: dev,
+      //       useTypescriptIncrementalApi: true,
+      //       checkSyntacticErrors: true,
+      //       tsconfig: tsConfigPath,
+      //       reportFiles: ['**', '!**/__tests__/**', '!**/?(*.)(spec|test).*'],
+      //       compilerOptions: { isolatedModules: true, noEmit: true },
+      //       silent: true,
+      //       formatter: 'codeframe',
+      //     })
+      //   ),
       config.experimental.modern &&
         !webpack5Experiential &&
         !isServer &&
