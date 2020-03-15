@@ -332,9 +332,7 @@ export default function onDemandEntryHandler(
 
       const bundleFile = `${normalizePagePath(pageUrl)}.js`
       const name = join('static', buildId, 'pages', bundleFile)
-      const absolutePagePath = pagePath.startsWith(
-        'next/dist/pages'
-      )
+      const absolutePagePath = pagePath.startsWith('next/dist/pages')
         ? require.resolve(pagePath)
         : join(pagesDir, pagePath)
 
