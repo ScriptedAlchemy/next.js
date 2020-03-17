@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import chalk from 'chalk'
-import arg from 'next/dist/compiled/arg/index.js'
+import arg from '@module-federation/next/dist/compiled/arg/index.js'
 
 import { cliCommand } from '../bin/next'
 import { Telemetry } from '../telemetry/storage'

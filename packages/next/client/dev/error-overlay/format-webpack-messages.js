@@ -27,12 +27,13 @@ SOFTWARE.
 const friendlySyntaxErrorLabel = 'Syntax error:'
 
 function isLikelyASyntaxError(message) {
+  return false
   return message.indexOf(friendlySyntaxErrorLabel) !== -1
 }
 
 // Cleans up webpack error messages.
-// eslint-disable-next-line no-unused-vars
-function formatMessage(message, isError) {
+function formatMessage(message) {
+  if (!message.split) return
   let lines = message.split('\n')
 
   // Strip Webpack-added headers off errors/warnings
@@ -58,9 +59,6 @@ function formatMessage(message, isError) {
     /SyntaxError\s+\((\d+):(\d+)\)\s*(.+?)\n/g,
     `${friendlySyntaxErrorLabel} $3 ($1:$2)\n`
   )
-  // Remove columns from ESLint formatter output (we added these for more
-  // accurate syntax errors)
-  message = message.replace(/Line (\d+):\d+:/g, 'Line $1:')
   // Clean up export errors
   message = message.replace(
     /^.*export '(.+?)' was not found in '(.+?)'.*$/gm,
@@ -74,7 +72,9 @@ function formatMessage(message, isError) {
     /^.*export '(.+?)' \(imported as '(.+?)'\) was not found in '(.+?)'.*$/gm,
     `Attempted import error: '$1' is not exported from '$3' (imported as '$2').`
   )
-  lines = message.split('\n')
+  if (message.split) {
+    lines = message.split('\n')
+  }
 
   // Remove leading newline
   if (lines.length > 2 && lines[1].trim() === '') {
@@ -91,6 +91,17 @@ function formatMessage(message, isError) {
         .replace('Error: ', '')
         .replace('Module not found: Cannot find file:', 'Cannot find file:'),
     ]
+  }
+
+  // Add helpful message for users trying to use Sass for the first time
+  if (lines[1] && lines[1].match(/Cannot find module.+node-sass/)) {
+    // ./file.module.scss (<<loader info>>) => ./file.module.scss
+    lines[0] = lines[0].replace(/(.+) \(.+?(?=\?\?).+?\)/, '$1')
+
+    lines[1] =
+      "To use Next.js' built-in Sass support, you first need to install `sass`.\n"
+    lines[1] += 'Run `npm i sass` or `yarn add sass` inside your workspace.\n'
+    lines[1] += '\nLearn more: https://err.sh/next.js/install-sass'
   }
 
   message = lines.join('\n')
@@ -125,6 +136,7 @@ function formatWebpackMessages(json) {
   })
   const result = { errors: formattedErrors, warnings: formattedWarnings }
   if (result.errors.some(isLikelyASyntaxError)) {
+    console.log(result);
     // If there are any syntax errors, show just them.
     result.errors = result.errors.filter(isLikelyASyntaxError)
   }

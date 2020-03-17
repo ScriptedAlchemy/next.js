@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import crypto from 'crypto'
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import path from 'path'
@@ -34,14 +35,13 @@ import ChunkNamesPlugin from './webpack/plugins/chunk-names-plugin'
 import { CssMinimizerPlugin } from './webpack/plugins/css-minimizer-plugin'
 import { importAutoDllPlugin } from './webpack/plugins/dll-import'
 import { DropClientPage } from './webpack/plugins/next-drop-client-page-plugin'
-import NextEsmPlugin from './webpack/plugins/next-esm-plugin'
 import NextJsSsrImportPlugin from './webpack/plugins/nextjs-ssr-import'
 import NextJsSSRModuleCachePlugin from './webpack/plugins/nextjs-ssr-module-cache'
 import PagesManifestPlugin from './webpack/plugins/pages-manifest-plugin'
 import { ProfilingPlugin } from './webpack/plugins/profiling-plugin'
 import { ReactLoadablePlugin } from './webpack/plugins/react-loadable-plugin'
 import { ServerlessPlugin } from './webpack/plugins/serverless-plugin'
-import { TerserPlugin } from './webpack/plugins/terser-webpack-plugin/src/index'
+import { TerserPlugin } from './webpack/plugins/terser-webpack-plugin/src'
 import WebpackConformancePlugin, {
   MinificationConformanceCheck,
   ReactSyncScriptsConformanceCheck,
@@ -49,6 +49,14 @@ import WebpackConformancePlugin, {
 } from './webpack/plugins/webpack-conformance-plugin'
 
 type ExcludesFalse = <T>(x: T | false) => x is T
+
+let NextEsmPlugin: any
+
+const webpack5Experiential = parseInt(require('webpack').version) === 5
+
+if (!webpack5Experiential) {
+  NextEsmPlugin = require('./webpack/plugins/next-esm-plugin')
+}
 
 const escapePathVariables = (value: any) => {
   return typeof value === 'string'
@@ -242,10 +250,10 @@ export default async function getBaseWebpackConfig(
     alias: {
       // These aliases make sure the wrapper module is not included in the bundles
       // Which makes bundles slightly smaller, but also skips parsing a module that we know will result in this alias
-      'next/head': 'next/dist/next-server/lib/head.js',
-      'next/router': 'next/dist/client/router.js',
-      'next/config': 'next/dist/next-server/lib/runtime-config.js',
-      'next/dynamic': 'next/dist/next-server/lib/dynamic.js',
+      'next/head': '@module-federation/next/dist/next-server/lib/head.js',
+      'next/router': '@module-federation/next/dist/client/router.js',
+      'next/config': '@module-federation/next/dist/next-server/lib/runtime-config.js',
+      'next/dynamic': '@module-federation/next/dist/next-server/lib/dynamic.js',
       next: NEXT_PROJECT_ROOT,
       [PAGES_DIR_ALIAS]: pagesDir,
       [DOT_NEXT_ALIAS]: distDir,
@@ -619,7 +627,6 @@ export default async function getBaseWebpackConfig(
         : `static/chunks/${dev ? '[name]' : '[name].[contenthash]'}.js`,
       strictModuleExceptionHandling: true,
       crossOriginLoading: crossOrigin,
-      futureEmitAssets: !dev,
       webassemblyModuleFilename: 'static/wasm/[modulehash].wasm',
     },
     performance: false,
@@ -777,41 +784,56 @@ export default async function getBaseWebpackConfig(
             ]
 
             if (!isServer) {
-              const AutoDllPlugin = importAutoDllPlugin({ distDir })
-              devPlugins.push(
-                new AutoDllPlugin({
-                  filename: '[name]_[hash].js',
-                  path: './static/development/dll',
-                  context: dir,
-                  entry: {
-                    dll: ['react', 'react-dom'],
-                  },
-                  config: {
-                    devtool,
-                    mode: webpackMode,
-                    resolve: resolveConfig,
-                  },
-                })
-              )
+              if (!webpack5Experiential) {
+                // Not needed with webpack 5
+                const AutoDllPlugin = importAutoDllPlugin({ distDir })
+                devPlugins.push(
+                  new AutoDllPlugin({
+                    filename: '[name]_[hash].js',
+                    path: './static/development/dll',
+                    context: dir,
+                    entry: {
+                      dll: ['react', 'react-dom'],
+                    },
+                    config: {
+                      devtool,
+                      mode: webpackMode,
+                      resolve: resolveConfig,
+                    },
+                  })
+                )
+              }
               devPlugins.push(new webpack.HotModuleReplacementPlugin())
             }
 
             return devPlugins
           })()
         : []),
-      !dev && new webpack.HashedModuleIdsPlugin(),
       !dev &&
-        new webpack.IgnorePlugin({
-          checkResource: (resource: string) => {
-            return /react-is/.test(resource)
-          },
-          checkContext: (context: string) => {
-            return (
-              /next-server[\\/]dist[\\/]/.test(context) ||
-              /next[\\/]dist[\\/]/.test(context)
-            )
-          },
-        }),
+        (webpack5Experiential
+          ? // @ts-ignore
+            new webpack.ids.HashedModuleIdsPlugin()
+          : new webpack.HashedModuleIdsPlugin()),
+      !dev &&
+        new webpack.IgnorePlugin(
+          webpack5Experiential
+            ? {
+                // webpack 5 only accepts New RegEx
+                resourceRegExp: /react-is/,
+                contextRegExp: /(next-server|next)[\\/]dist[\\/]/,
+              }
+            : {
+                checkResource: (resource: string) => {
+                  return /react-is/.test(resource)
+                },
+                checkContext: (context: string) => {
+                  return (
+                    /next-server[\\/]dist[\\/]/.test(context) ||
+                    /next[\\/]dist[\\/]/.test(context)
+                  )
+                },
+              }
+        ),
       isServerless && isServer && new ServerlessPlugin(),
       isServer && new PagesManifestPlugin(isLikeServerless),
       target === 'server' &&
@@ -845,8 +867,10 @@ export default async function getBaseWebpackConfig(
           })
         ),
       config.experimental.modern &&
+        !webpack5Experiential &&
         !isServer &&
         !dev &&
+        // does not work with WP5, needs to be refactored.
         new NextEsmPlugin({
           filename: (getFileName: Function | string) => (...args: any[]) => {
             const name =
@@ -888,6 +912,13 @@ export default async function getBaseWebpackConfig(
     ].filter((Boolean as any) as ExcludesFalse),
   }
 
+  if (webpack5Experiential) {
+    // @ts-ignore
+    delete webpackConfig.output.futureEmitAssets
+    // @ts-ignore
+    delete webpackConfig.node.setImmediate
+  }
+
   webpackConfig = await buildConfiguration(webpackConfig, {
     rootDirectory: dir,
     customAppFile,
@@ -896,7 +927,14 @@ export default async function getBaseWebpackConfig(
     hasSupportCss: !!config.experimental.css,
     hasSupportScss: !!config.experimental.scss,
     assetPrefix: config.assetPrefix || '',
+    sassOptions: config.experimental.sassOptions,
   })
+
+  // in Webpack 5- commonJS output requires a library name
+  if (!isServer && webpack5Experiential) {
+    // @ts-ignore
+    webpackConfig.output.library = 'nextapp'
+  }
 
   if (typeof config.webpack === 'function') {
     webpackConfig = config.webpack(webpackConfig, {
@@ -963,6 +1001,17 @@ export default async function getBaseWebpackConfig(
       ) ?? false
 
     if (hasUserCssConfig) {
+      // only show warning for one build
+      if (isServer) {
+        console.warn(
+          chalk.yellow.bold('Warning: ') +
+            chalk.bold(
+              'Built-in CSS support is being disabled due to custom CSS configuration being detected.\n'
+            ) +
+            'See here for more info: https://err.sh/next.js/built-in-css-disabled\n'
+        )
+      }
+
       if (webpackConfig.module?.rules.length) {
         // Remove default CSS Loader
         webpackConfig.module.rules = webpackConfig.module.rules.filter(
