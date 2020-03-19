@@ -448,12 +448,13 @@ export default async function build(dir: string, conf = null): Promise<void> {
   let customAppGetInitialProps: boolean | undefined
 
   process.env.NEXT_PHASE = PHASE_PRODUCTION_BUILD
+  console.log(staticCheckWorker)
 
   const staticCheckWorkers = new Worker(staticCheckWorker, {
     numWorkers: config.experimental.cpus,
     enableWorkerThreads: config.experimental.workerThreads,
   }) as Worker & { isPageStatic: typeof isPageStatic }
-
+  console.log(staticCheckWorkers)
   staticCheckWorkers.getStdout().pipe(process.stdout)
   staticCheckWorkers.getStderr().pipe(process.stderr)
 
@@ -524,7 +525,6 @@ export default async function build(dir: string, conf = null): Promise<void> {
             serverBundle,
             runtimeEnvConfig
           )
-
           if (result.isHybridAmp) {
             isHybridAmp = true
             hybridAmpPages.add(page)
