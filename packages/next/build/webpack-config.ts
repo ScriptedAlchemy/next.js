@@ -283,7 +283,7 @@ export default async function getBaseWebpackConfig(
       ...getOptimizedAliases(isServer),
     },
     mainFields: isServer ? ['main', 'module'] : ['browser', 'module', 'main'],
-    plugins: [PnpWebpackPlugin],
+    plugins: !webpack5Experiential ? [PnpWebpackPlugin] : [],
   }
 
   const webpackMode = dev ? 'development' : 'production'
@@ -585,7 +585,7 @@ export default async function getBaseWebpackConfig(
           // When the 'serverless' target is used all node_modules will be compiled into the output bundles
           // So that the 'serverless' bundles have 0 runtime dependencies
           '@ampproject/toolbox-optimizer', // except this one
-        ],
+        ].concat(webpack5Experiential ? ['enhanced-resolve'] : []),
     optimization: {
       checkWasmTypes: false,
       nodeEnv: false,
@@ -649,8 +649,12 @@ export default async function getBaseWebpackConfig(
         return '[name]'
       },
       libraryTarget: isServer ? 'commonjs2' : 'var',
-      hotUpdateChunkFilename: 'static/webpack/[id].[hash].hot-update.js',
-      hotUpdateMainFilename: 'static/webpack/[hash].hot-update.json',
+      hotUpdateChunkFilename: webpack5Experiential
+        ? 'static/webpack/[id].[fullhash].hot-update.js'
+        : 'static/webpack/[id].[hash].hot-update.js',
+      hotUpdateMainFilename: webpack5Experiential
+        ? 'static/webpack/[fullhash].hot-update.json'
+        : 'static/webpack/[hash].hot-update.json',
       // This saves chunks with the name given via `import()`
       chunkFilename: isServer
         ? `${dev ? '[name]' : '[name].[contenthash]'}.js`
@@ -683,7 +687,7 @@ export default async function getBaseWebpackConfig(
         'node_modules',
         ...nodePathList, // Support for NODE_PATH environment variable
       ],
-      plugins: [PnpWebpackPlugin],
+      plugins: webpack5Experiential ? [] : [PnpWebpackPlugin],
     },
     module: {
       rules: [
@@ -989,10 +993,12 @@ export default async function getBaseWebpackConfig(
     sassOptions: config.experimental.sassOptions,
   })
 
-  // in Webpack 5- commonJS output requires a library name
+  // in Webpack 5- var larbraryType output requires a name, will default to package.json name soon
   if (!isServer && webpack5Experiential) {
     // @ts-ignore
-    webpackConfig.output.library = 'nextapp'
+    webpackConfig.output.library = webpackConfig.output.library
+      ? webpackConfig.output.library
+      : 'nextapp'
   }
 
   if (typeof config.webpack === 'function') {
