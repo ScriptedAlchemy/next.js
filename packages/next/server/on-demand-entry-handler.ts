@@ -328,7 +328,7 @@ export default function onDemandEntryHandler(
 
       // Default the /_error route to the Next.js provided default page
       if (page === '/_error' && pagePath === null) {
-        pagePath = '@module-federation/next/dist/pages/_error'
+        pagePath = 'next/dist/pages/_error'
       }
 
       if (pagePath === null) {

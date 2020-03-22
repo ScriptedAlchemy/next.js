@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import arg from '@module-federation/next/dist/compiled/arg/index.js'
+import arg from 'next/dist/compiled/arg/index.js'
 ;['react', 'react-dom'].forEach(dependency => {
   try {
     // When 'npm link' is used it checks the clone location. Not the project.
