@@ -10,10 +10,10 @@ module.exports = withMDX({
   pageExtensions: ['js', 'jsx', 'mdx', 'md'],
   webpack: (config, { defaultLoaders, isServer, dev }) => {
     // Fixes npm packages that depend on `fs` module
-    config.node = {
-      fs: 'empty',
-      module: 'empty',
-    }
+    // config.node = {
+    //   fs: 'empty',
+    //   module: 'empty',
+    // }
 
     config.module.rules.push({
       test: /\.svg$/,
