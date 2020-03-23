@@ -559,9 +559,9 @@ export default async function getBaseWebpackConfig(
       checkWasmTypes: false,
       nodeEnv: false,
       splitChunks: isServer ? false : splitChunksConfig,
-      // runtimeChunk: isServer
-      //   ? undefined
-      //   : { name: CLIENT_STATIC_FILES_RUNTIME_WEBPACK },
+      runtimeChunk: isServer
+        ? undefined
+        : { name: CLIENT_STATIC_FILES_RUNTIME_WEBPACK },
       minimize: !(dev || isServer),
       minimizer: [
         // Minify JavaScript
@@ -806,7 +806,13 @@ export default async function getBaseWebpackConfig(
                   })
                 )
               }
-              devPlugins.push(new webpack.HotModuleReplacementPlugin())
+              devPlugins.push(
+                new webpack.HotModuleReplacementPlugin({
+                  multiStep: true,
+                  fullBuildTimeout: 5000,
+                  requestTimeout: 1000,
+                })
+              )
             }
 
             return devPlugins
