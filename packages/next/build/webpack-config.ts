@@ -268,7 +268,7 @@ export default async function getBaseWebpackConfig(
     cache: true,
     cpus: config.experimental.cpus,
     distDir: distDir,
-    parallel: true,
+    parallel: false,
     sourceMap: false,
     workerThreads: config.experimental.workerThreads,
   }
@@ -555,7 +555,14 @@ export default async function getBaseWebpackConfig(
           // When the 'serverless' target is used all node_modules will be compiled into the output bundles
           // So that the 'serverless' bundles have 0 runtime dependencies
           '@ampproject/toolbox-optimizer', // except this one
-        ].concat(webpack5Experiential ? ['enhanced-resolve',{ 'next/router': 'next/dist/client/router.js' }] : []),
+        ].concat(
+          webpack5Experiential
+            ? [
+                'enhanced-resolve',
+                { 'next/router': 'next/dist/client/router.js' },
+              ]
+            : []
+        ),
     optimization: {
       checkWasmTypes: false,
       nodeEnv: false,
@@ -809,7 +816,7 @@ export default async function getBaseWebpackConfig(
               }
               devPlugins.push(
                 new webpack.HotModuleReplacementPlugin({
-                  multiStep: true
+                  multiStep: true,
                 })
               )
             }
