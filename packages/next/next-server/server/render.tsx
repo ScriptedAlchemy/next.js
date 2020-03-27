@@ -432,6 +432,8 @@ export async function renderToHTML(
   const router = new ServerRouter(pathname, query, asPath, {
     isFallback: isFallback,
   })
+  global.router = router
+
   const ctx = {
     err,
     req: isAutoExport ? undefined : req,
@@ -440,10 +442,9 @@ export async function renderToHTML(
     query,
     asPath,
     AppTree: (props: any) => {
-      global.router = router;
       return (
         <AppContainer>
-          <App {...props} Component={Component} router={router} />
+          <App {...props} Component={Component} router={global.router} />
         </AppContainer>
       )
     },
@@ -462,18 +463,19 @@ export async function renderToHTML(
   const reactLoadableModules: string[] = []
 
   const AppContainer = ({ children }: any) => {
-  global.router = router;
-  return (
-    <RouterContext.Provider value={router}>
-      <AmpStateContext.Provider value={ampState}>
-        <LoadableContext.Provider
-          value={moduleName => reactLoadableModules.push(moduleName)}
-        >
-          {children}
-        </LoadableContext.Provider>
-      </AmpStateContext.Provider>
-    </RouterContext.Provider>
-  )}
+    global.router = router
+    return (
+      <RouterContext.Provider value={global.router}>
+        <AmpStateContext.Provider value={ampState}>
+          <LoadableContext.Provider
+            value={moduleName => reactLoadableModules.push(moduleName)}
+          >
+            {children}
+          </LoadableContext.Provider>
+        </AmpStateContext.Provider>
+      </RouterContext.Provider>
+    )
+  }
 
   try {
     props = await loadGetInitialProps(App, {
@@ -659,7 +661,7 @@ export async function renderToHTML(
   let renderPage: RenderPage = (
     options: ComponentsEnhancer = {}
   ): { html: string; head: any } => {
-    global.router = router;
+    global.router = router
 
     const renderError = renderPageError()
     if (renderError) return renderError
@@ -672,7 +674,11 @@ export async function renderToHTML(
     return render(
       renderElementToString,
       <AppContainer>
-        <EnhancedApp Component={EnhancedComponent} router={router} {...props} />
+        <EnhancedApp
+          Component={EnhancedComponent}
+          router={global.router}
+          {...props}
+        />
       </AppContainer>,
       ampState
     )
