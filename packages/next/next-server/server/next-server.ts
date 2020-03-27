@@ -199,6 +199,7 @@ export default class Server {
     if (!dev) {
       this.pagesManifest = require(pagesManifestPath)
     }
+
     this.router = new Router(this.generateRoutes())
     this.setAssetPrefix(assetPrefix)
 
@@ -813,7 +814,6 @@ export default class Server {
           pagePath!,
           !this.renderOpts.dev && this._isLikeServerless
         )
-
         return {
           components,
           query: {
@@ -910,6 +910,7 @@ export default class Server {
         query,
       })
     }
+
     let previewData: string | false | object | undefined
     let isPreviewMode = false
 
@@ -918,19 +919,16 @@ export default class Server {
       isPreviewMode = previewData !== false
     }
 
-
     // non-spr requests should render like normal
     if (!isSSG) {
       // handle serverless
       if (isLikeServerless) {
-
         if (isDataReq) {
           const renderResult = await (components.Component as any).renderReqToHTML(
             req,
             res,
             'passthrough'
           )
-
 
           sendPayload(
             res,
@@ -945,7 +943,6 @@ export default class Server {
           )
           return null
         }
-
         prepareServerlessUrl(req, query)
         return (components.Component as any).renderReqToHTML(req, res)
       }
@@ -997,8 +994,6 @@ export default class Server {
       ? // Preview data bypasses the cache
         undefined
       : await getSprCache(ssgCacheKey)
-
-
     if (cachedData) {
       const data = isDataReq
         ? JSON.stringify(cachedData.pageData)
@@ -1054,8 +1049,8 @@ export default class Server {
           ...components,
           ...opts,
         }
-
         renderResult = await renderToHTML(req, res, pathname, query, renderOpts)
+
         html = renderResult
         // TODO: change this to a different passing mechanism
         pageData = (renderOpts as any).pageData
@@ -1174,7 +1169,6 @@ export default class Server {
   ): Promise<string | null> {
     try {
       const result = await this.findPageComponents(pathname, query)
-      Object.assign(result?.query, query)
       if (result) {
         try {
           return await this.renderToHTMLWithComponents(
@@ -1197,6 +1191,7 @@ export default class Server {
           if (!params) {
             continue
           }
+
           const result = await this.findPageComponents(
             dynamicRoute.page,
             query,

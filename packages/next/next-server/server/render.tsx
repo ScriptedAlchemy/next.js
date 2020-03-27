@@ -440,6 +440,7 @@ export async function renderToHTML(
     query,
     asPath,
     AppTree: (props: any) => {
+      global.router = router;
       return (
         <AppContainer>
           <App {...props} Component={Component} router={router} />
@@ -658,6 +659,8 @@ export async function renderToHTML(
   let renderPage: RenderPage = (
     options: ComponentsEnhancer = {}
   ): { html: string; head: any } => {
+    global.router = router;
+
     const renderError = renderPageError()
     if (renderError) return renderError
 
