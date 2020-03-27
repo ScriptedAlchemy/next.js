@@ -452,7 +452,6 @@ export async function renderToHTML(
   if (documentMiddlewareEnabled && typeof DocumentMiddleware === 'function') {
     await DocumentMiddleware(ctx)
   }
-
   const ampState = {
     ampFirst: pageConfig.amp === true,
     hasQuery: Boolean(query.amp),
@@ -461,7 +460,9 @@ export async function renderToHTML(
 
   const reactLoadableModules: string[] = []
 
-  const AppContainer = ({ children }: any) => (
+  const AppContainer = ({ children }: any) => {
+  global.router = router;
+  return (
     <RouterContext.Provider value={router}>
       <AmpStateContext.Provider value={ampState}>
         <LoadableContext.Provider
@@ -471,7 +472,7 @@ export async function renderToHTML(
         </LoadableContext.Provider>
       </AmpStateContext.Provider>
     </RouterContext.Provider>
-  )
+  )}
 
   try {
     props = await loadGetInitialProps(App, {
