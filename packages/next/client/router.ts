@@ -123,6 +123,9 @@ export function useRouter() {
   if (process.browser) {
     return React.useContext(RouterContext)
   }
+  if(React.useContext(RouterContext)) {
+    return React.useContext(RouterContext)
+  }
   return global.router
 }
 
