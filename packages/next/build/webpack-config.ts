@@ -292,7 +292,7 @@ export default async function getBaseWebpackConfig(
     cache: true,
     cpus: config.experimental.cpus,
     distDir: distDir,
-    parallel: false,
+    parallel: true,
     sourceMap: false,
     workerThreads: config.experimental.workerThreads,
   }
@@ -486,7 +486,6 @@ export default async function getBaseWebpackConfig(
         ['next']
       : !isServerless
       ? [
-          { 'next/router': 'next/dist/client/router.js' },
           (context, request, callback) => {
             if (request === 'next') {
               return callback(undefined, `commonjs ${request}`)
@@ -590,7 +589,6 @@ export default async function getBaseWebpackConfig(
           webpack5Experiential
             ? [
                 'enhanced-resolve',
-                { 'next/router': 'next/dist/client/router.js' },
               ]
             : []
         ),
@@ -859,11 +857,8 @@ export default async function getBaseWebpackConfig(
                   })
                 )
               }
-              devPlugins.push(
-                new webpack.HotModuleReplacementPlugin({
-                  multiStep: true,
-                })
-              )
+              !webpack5Experiential &&
+                devPlugins.push(new webpack.HotModuleReplacementPlugin())
             }
 
             return devPlugins
