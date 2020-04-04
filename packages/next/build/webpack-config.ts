@@ -50,14 +50,16 @@ import WebpackConformancePlugin, {
 } from './webpack/plugins/webpack-conformance-plugin'
 
 type ExcludesFalse = <T>(x: T | false) => x is T
-var LiveReloadPlugin = require('./webpack/plugins/livereload.js').default
-
-let NextEsmPlugin: any
 
 const webpack5Experiential = parseInt(require('webpack').version) === 5
 
+let LiveReloadPlugin: any
+let NextEsmPlugin: any
+
 if (!webpack5Experiential) {
   NextEsmPlugin = require('./webpack/plugins/next-esm-plugin')
+} else {
+  LiveReloadPlugin = require('./webpack/plugins/livereload.js').default
 }
 
 const escapePathVariables = (value: any) => {
