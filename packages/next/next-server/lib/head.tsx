@@ -154,7 +154,7 @@ function Head({ children }: { children: React.ReactNode }) {
           {updateHead => (
             <Effect
               reduceComponentsToState={reduceComponents}
-              handleStateChange={updateHead}
+              handleStateChange={global.updateHead || updateHead}
               inAmpMode={isInAmpMode(ampState)}
             >
               {children}
