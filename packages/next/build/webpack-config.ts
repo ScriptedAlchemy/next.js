@@ -839,7 +839,9 @@ export default async function getBaseWebpackConfig(
                 )
               }
               !webpack5Experiential &&
-                devPlugins.push(new webpack.HotModuleReplacementPlugin())
+                devPlugins.push(
+                  new webpack.HotModuleReplacementPlugin({ multiStep: true })
+                )
               webpack5Experiential &&
                 devPlugins.push(new LiveReloadPlugin({ appendScriptTag: true }))
             }
