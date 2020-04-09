@@ -90,14 +90,8 @@ class LiveReloadPlugin {
       .filter(fileIgnoredOrNotEmitted.bind(this))
       .filter(fileHashDoesntMatches.bind(this))
       .map(data => {
-        console.log('data', data)
         return data[0]
       })
-    console.log(
-      this.isRunning &&
-        (hash !== this.lastHash ||
-          !arraysEqual(childHashes, this.lastChildHashes))
-    )
     if (
       this.isRunning &&
       (hash !== this.lastHash ||
@@ -116,7 +110,6 @@ class LiveReloadPlugin {
   }
 
   failed() {
-    console.log('failed')
     this.lastHash = null
     this.lastChildHashes = []
   }

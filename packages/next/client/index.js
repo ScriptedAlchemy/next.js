@@ -393,6 +393,7 @@ function clearMarks() {
 }
 
 function AppContainer({ children }) {
+  global.updateHead = updateHead
   return (
     <Container
       fn={error =>
