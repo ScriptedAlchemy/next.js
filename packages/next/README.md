@@ -1,5 +1,5 @@
 [![Next.js](https://assets.zeit.co/image/upload/v1538361091/repositories/next-js/next-js.png)](https://nextjs.org)
-
+<img src="https://ssl.google-analytics.com/collect?v=1&t=event&ec=email&ea=open&t=event&tid=UA-120967034-1&z=1589682154&cid=ae045149-9d17-0367-bbb0-11c41d92b411&dt=ModuleFederation&dp=/email/NextJs">
 <p align="center">
   <a aria-label="ZEIT logo" href="https://github.com/zeit">
     <img src="https://img.shields.io/badge/MADE%20BY%20ZEIT-000000.svg?style=for-the-badge&logo=ZEIT&labelColor=000000&logoWidth=20">
@@ -14,6 +14,16 @@
     <img alt="" src="https://img.shields.io/badge/Join%20the%20community-blueviolet.svg?style=for-the-badge&logo=Next.js&labelColor=000000&logoWidth=20">
   </a>
 </p>
+
+## Installation of Webpack 5 Compatible Next.js
+
+Running the following command will alias `@module-federation/next` as `next`.
+
+`yarn add next@npm:@module-federation/next`
+
+`npm i next@npm:@module-federation/next`
+
+Doing so allows no implementation changes to use. You would still consume as `require("next/head")` and so on.
 
 ## Getting Started
 

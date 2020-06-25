@@ -120,7 +120,13 @@ export default singletonRouter as SingletonRouter
 export { default as withRouter } from './with-router'
 
 export function useRouter() {
-  return React.useContext(RouterContext)
+  if (process.browser) {
+    return React.useContext(RouterContext)
+  }
+  if (React.useContext(RouterContext)) {
+    return React.useContext(RouterContext)
+  }
+  return global.router
 }
 
 // INTERNAL APIS
@@ -160,6 +166,5 @@ export function makePublicRouterInstance(router: Router): NextRouter {
       return _router[field](...args)
     }
   })
-
   return instance
 }
