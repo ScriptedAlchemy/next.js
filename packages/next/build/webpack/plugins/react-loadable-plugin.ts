@@ -1,30 +1,30 @@
 /**
-COPYRIGHT (c) 2017-present James Kyle <me@thejameskyle.com>
+ COPYRIGHT (c) 2017-present James Kyle <me@thejameskyle.com>
  MIT License
  Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+ a copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so, subject to
+ the following conditions:
  The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
+ included in all copies or substantial portions of the Software.
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWAR
-*/
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWAR
+ */
 // Implementation of this PR: https://github.com/jamiebuilds/react-loadable/pull/132
 // Modified to strip out unneeded results for Next's specific use case
 
 import webpack, {
   Compiler,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  compilation as CompilationType,
+  compilation as CompilationType
 } from 'webpack'
 
 const isWebpack5 = parseInt(webpack.version!) === 5
@@ -83,7 +83,7 @@ function buildManifest(
 
             manifest[request].push({
               id,
-              file,
+              file
             })
           }
         })
@@ -107,7 +107,9 @@ export class ReactLoadablePlugin {
   }
 
   createAssets(compiler: any, compilation: any, assets: any) {
+    console.log(compiler);
     const manifest = buildManifest(compiler, compilation)
+    manifest['federation'] = manifest['undefined']
     var json = JSON.stringify(manifest, null, 2)
     assets[this.filename] = {
       source() {
@@ -115,8 +117,9 @@ export class ReactLoadablePlugin {
       },
       size() {
         return json.length
-      },
+      }
     }
+    console.log(assets)
     return assets
   }
 
@@ -128,7 +131,7 @@ export class ReactLoadablePlugin {
           {
             name: 'ReactLoadableManifest',
             // @ts-ignore TODO: Remove ignore when webpack 5 is stable
-            stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONS,
+            stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONS
           },
           (assets: any) => {
             this.createAssets(compiler, compilation, assets)

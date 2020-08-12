@@ -728,6 +728,8 @@ export async function renderToHTML(
 
     return { html, head }
   }
+  console.log('reactLoadableManifest',reactLoadableManifest);
+
   const documentCtx = { ...ctx, renderPage }
   const docProps: DocumentInitialProps = await loadGetInitialProps(
     Document,

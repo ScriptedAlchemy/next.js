@@ -221,7 +221,7 @@ export default async function getBaseWebpackConfig(
     }
   }
 
-  const hasReactRefresh = dev && !isServer
+  const hasReactRefresh = false
 
   const distDir = path.join(dir, config.distDir)
   const defaultLoaders = {
@@ -418,87 +418,87 @@ export default async function getBaseWebpackConfig(
   } = {
     dev: {
       cacheGroups: {
-        default: false,
-        vendors: false,
-        // In webpack 5 vendors was renamed to defaultVendors
-        defaultVendors: false,
+        // default: false,
+        // vendors: false,
+        // // In webpack 5 vendors was renamed to defaultVendors
+        // defaultVendors: false,
       },
     },
     prodGranular: {
       chunks: 'all',
       cacheGroups: {
-        default: false,
-        vendors: false,
-        // In webpack 5 vendors was renamed to defaultVendors
-        defaultVendors: false,
-        framework: {
-          chunks: 'all',
-          name: 'framework',
-          // This regex ignores nested copies of framework libraries so they're
-          // bundled with their issuer.
-          // https://github.com/vercel/next.js/pull/9012
-          test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
-          priority: 40,
-          // Don't let webpack eliminate this chunk (prevents this chunk from
-          // becoming a part of the commons chunk)
-          enforce: true,
-        },
-        lib: {
-          test(module: { size: Function; identifier: Function }): boolean {
-            return (
-              module.size() > 160000 &&
-              /node_modules[/\\]/.test(module.identifier())
-            )
-          },
-          name(module: {
-            type: string
-            libIdent?: Function
-            updateHash: (hash: crypto.Hash) => void
-          }): string {
-            const hash = crypto.createHash('sha1')
-            if (isModuleCSS(module)) {
-              module.updateHash(hash)
-            } else {
-              if (!module.libIdent) {
-                throw new Error(
-                  `Encountered unknown module type: ${module.type}. Please open an issue.`
-                )
-              }
-
-              hash.update(module.libIdent({ context: dir }))
-            }
-
-            return hash.digest('hex').substring(0, 8)
-          },
-          priority: 30,
-          minChunks: 1,
-          reuseExistingChunk: true,
-        },
-        commons: {
-          name: 'commons',
-          minChunks: totalPages,
-          priority: 20,
-        },
-        shared: {
-          name(module, chunks) {
-            return (
-              crypto
-                .createHash('sha1')
-                .update(
-                  chunks.reduce(
-                    (acc: string, chunk: webpack.compilation.Chunk) => {
-                      return acc + chunk.name
-                    },
-                    ''
-                  )
-                )
-                .digest('hex') + (isModuleCSS(module) ? '_CSS' : '')
-            )
-          },
-          priority: 10,
-          minChunks: 2,
-          reuseExistingChunk: true,
-        },
+        // default: false,
+        // vendors: false,
+        // // In webpack 5 vendors was renamed to defaultVendors
+        // defaultVendors: false,
+        // framework: {
+        //   chunks: 'all',
+        //   name: 'framework',
+        //   // This regex ignores nested copies of framework libraries so they're
+        //   // bundled with their issuer.
+        //   // https://github.com/vercel/next.js/pull/9012
+        //   test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
+        //   priority: 40,
+        //   // Don't let webpack eliminate this chunk (prevents this chunk from
+        //   // becoming a part of the commons chunk)
+        //   enforce: true,
+        // },
+        // lib: {
+        //   test(module: { size: Function; identifier: Function }): boolean {
+        //     return (
+        //       module.size() > 160000 &&
+        //       /node_modules[/\\]/.test(module.identifier())
+        //     )
+        //   },
+        //   name(module: {
+        //     type: string
+        //     libIdent?: Function
+        //     updateHash: (hash: crypto.Hash) => void
+        //   }): string {
+        //     const hash = crypto.createHash('sha1')
+        //     if (isModuleCSS(module)) {
+        //       module.updateHash(hash)
+        //     } else {
+        //       if (!module.libIdent) {
+        //         throw new Error(
+        //           `Encountered unknown module type: ${module.type}. Please open an issue.`
+        //         )
+        //       }
+        //
+        //       hash.update(module.libIdent({ context: dir }))
+        //     }
+        //
+        //     return hash.digest('hex').substring(0, 8)
+        //   },
+        //   priority: 30,
+        //   minChunks: 1,
+        //   reuseExistingChunk: true,
+        // },
+        // commons: {
+        //   name: 'commons',
+        //   minChunks: totalPages,
+        //   priority: 20,
+        // },
+        // shared: {
+        //   name(module, chunks) {
+        //     return (
+        //       crypto
+        //         .createHash('sha1')
+        //         .update(
+        //           chunks.reduce(
+        //             (acc: string, chunk: webpack.compilation.Chunk) => {
+        //               return acc + chunk.name
+        //             },
+        //             ''
+        //           )
+        //         )
+        //         .digest('hex') + (isModuleCSS(module) ? '_CSS' : '')
+        //     )
+        //   },
+        //   priority: 10,
+        //   minChunks: 2,
+        //   reuseExistingChunk: true,
+        // },
       },
       maxInitialRequests: 25,
       minSize: 20000,
@@ -712,38 +712,38 @@ export default async function getBaseWebpackConfig(
         ],
     optimization: {
       // Webpack 5 uses a new property for the same functionality
-      ...(isWebpack5 ? { emitOnErrors: !dev } : { noEmitOnErrors: dev }),
+      // ...(isWebpack5 ? { emitOnErrors: !dev } : { noEmitOnErrors: dev }),
       checkWasmTypes: false,
       nodeEnv: false,
-      splitChunks: isServer ? false : splitChunksConfig,
-      runtimeChunk: isServer
-        ? isWebpack5 && !isLikeServerless
-          ? { name: 'webpack-runtime' }
-          : undefined
-        : { name: CLIENT_STATIC_FILES_RUNTIME_WEBPACK },
-      minimize: !(dev || isServer),
-      minimizer: [
-        // Minify JavaScript
-        new TerserPlugin({
-          extractComments: false,
-          cache: path.join(distDir, 'cache', 'next-minifier'),
-          parallel: config.experimental.cpus || true,
-          terserOptions,
-        }),
-        // Minify CSS
-        new CssMinimizerPlugin({
-          postcssOptions: {
-            map: {
-              // `inline: false` generates the source map in a separate file.
-              // Otherwise, the CSS file is needlessly large.
-              inline: false,
-              // `annotation: false` skips appending the `sourceMappingURL`
-              // to the end of the CSS file. Webpack already handles this.
-              annotation: false,
-            },
-          },
-        }),
-      ],
+      // splitChunks: isServer ? false : splitChunksConfig,
+      // runtimeChunk: isServer
+      //   ? isWebpack5 && !isLikeServerless
+      //     ? { name: 'webpack-runtime' }
+      //     : undefined
+      //   : { name: CLIENT_STATIC_FILES_RUNTIME_WEBPACK },
+      // minimize: !(dev || isServer),
+      // minimizer: [
+      //   // Minify JavaScript
+      //   new TerserPlugin({
+      //     extractComments: false,
+      //     cache: path.join(distDir, 'cache', 'next-minifier'),
+      //     parallel: config.experimental.cpus || true,
+      //     terserOptions,
+      //   }),
+      //   // Minify CSS
+      //   new CssMinimizerPlugin({
+      //     postcssOptions: {
+      //       map: {
+      //         // `inline: false` generates the source map in a separate file.
+      //         // Otherwise, the CSS file is needlessly large.
+      //         inline: false,
+      //         // `annotation: false` skips appending the `sourceMappingURL`
+      //         // to the end of the CSS file. Webpack already handles this.
+      //         annotation: false,
+      //       },
+      //     },
+      //   }),
+      // ],
     },
     context: dir,
     node: {
@@ -862,7 +862,7 @@ export default async function getBaseWebpackConfig(
       ].filter(Boolean),
     },
     plugins: [
-      hasReactRefresh && new ReactRefreshWebpackPlugin(),
+      // hasReactRefresh && new ReactRefreshWebpackPlugin(),
       // Makes sure `Buffer` is polyfilled in client-side bundles (same behavior as webpack 4)
       isWebpack5 &&
         !isServer &&
@@ -1233,9 +1233,9 @@ export default async function getBaseWebpackConfig(
   }
 
   // Inject missing React Refresh loaders so that development mode is fast:
-  if (hasReactRefresh) {
-    attachReactRefresh(webpackConfig, defaultLoaders.babel)
-  }
+  // if (hasReactRefresh) {
+  //   attachReactRefresh(webpackConfig, defaultLoaders.babel)
+  // }
 
   // check if using @zeit/next-typescript and show warning
   if (

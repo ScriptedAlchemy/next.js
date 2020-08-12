@@ -7,7 +7,7 @@ import {
   PageConfig,
   GetStaticPaths,
   GetServerSideProps,
-  GetStaticProps,
+  GetStaticProps
 } from 'next/types'
 
 export function interopDefault(mod: any) {
@@ -48,28 +48,35 @@ export async function loadComponents(
       pageConfig: Component.config || {},
       getStaticProps,
       getStaticPaths,
-      getServerSideProps,
+      getServerSideProps
     } as LoadComponentsReturnType
   }
 
   const DocumentMod = requirePage('/_document', distDir, serverless)
   const AppMod = requirePage('/_app', distDir, serverless)
   const ComponentMod = requirePage(pathname, distDir, serverless)
-
   const [
     buildManifest,
     reactLoadableManifest,
     Component,
     Document,
-    App,
+    App
   ] = await Promise.all([
     require(join(distDir, BUILD_MANIFEST)),
     require(join(distDir, REACT_LOADABLE_MANIFEST)),
     interopDefault(ComponentMod),
     interopDefault(DocumentMod),
-    interopDefault(AppMod),
+    interopDefault(AppMod)
   ])
-
+  console.log('load-component', { reactLoadableManifest })
+  console.log('load-component', { buildManifest })
+  console.log('transduce', Object.entries(buildManifest.pages))
+  const federatedManifest = Object.entries(buildManifest.pages).reduce((acc, item) => {
+    const joined = Array.from(new Set(reactLoadableManifest.federation.map(({ file }) => file))).concat(item[1])
+    acc[item[0]] = joined
+    return acc
+  }, {})
+  buildManifest.pages = federatedManifest
   const { getServerSideProps, getStaticProps, getStaticPaths } = ComponentMod
 
   return {
@@ -81,6 +88,6 @@ export async function loadComponents(
     pageConfig: ComponentMod.config || {},
     getServerSideProps,
     getStaticProps,
-    getStaticPaths,
+    getStaticPaths
   }
 }

@@ -1,5 +1,7 @@
-import initNext, * as next from './'
-
-window.next = next
-
-initNext().catch(console.error)
+const init = async () => {
+  await __webpack_init_sharing__('default')
+  const Module = await import('./index')
+  window.next = Module
+  Module.default().catch(console.error)
+}
+init()
