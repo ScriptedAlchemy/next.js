@@ -537,7 +537,7 @@ export class NextScript extends Component<OriginProps> {
       devOnlyCacheBusterQueryString,
     } = this.context
 
-    const normalScripts = files?.filter((file) => file.endsWith('.js'))
+    const normalScripts = files?.filter((file) => file.includes('main') && file.endsWith('.js'))
     const lowPriorityScripts = buildManifest.lowPriorityFiles?.filter((file) =>
       file.endsWith('.js')
     )
@@ -556,7 +556,6 @@ export class NextScript extends Component<OriginProps> {
             file
           )}${devOnlyCacheBusterQueryString}`}
           nonce={this.props.nonce}
-          async={!isDevelopment}
           crossOrigin={
             this.props.crossOrigin || process.env.__NEXT_CROSS_ORIGIN
           }

@@ -1064,8 +1064,6 @@ export default async function build(
   await telemetry.flush()
 }
 
-export type ClientSsgManifest = Set<string>
-
 function generateClientSsgManifest(
   prerenderManifest: PrerenderManifest,
   {
@@ -1074,7 +1072,7 @@ function generateClientSsgManifest(
     isModern,
   }: { buildId: string; distDir: string; isModern: boolean }
 ) {
-  const ssgPages: ClientSsgManifest = new Set<string>([
+  const ssgPages: Set<string> = new Set<string>([
     ...Object.entries(prerenderManifest.routes)
       // Filter out dynamic routes
       .filter(([, { srcRoute }]) => srcRoute == null)

@@ -33,6 +33,7 @@ export function getPagePath(
   try {
     page = denormalizePagePath(normalizePagePath(page))
   } catch (err) {
+    // tslint:disable-next-line
     console.error(err)
     throw pageNotFoundError(page)
   }

@@ -418,87 +418,87 @@ export default async function getBaseWebpackConfig(
   } = {
     dev: {
       cacheGroups: {
-        // default: false,
-        // vendors: false,
-        // // In webpack 5 vendors was renamed to defaultVendors
-        // defaultVendors: false,
+        default: false,
+        vendors: false,
+        // In webpack 5 vendors was renamed to defaultVendors
+        defaultVendors: false,
       },
     },
     prodGranular: {
       chunks: 'all',
       cacheGroups: {
-        // default: false,
-        // vendors: false,
-        // // In webpack 5 vendors was renamed to defaultVendors
-        // defaultVendors: false,
-        // framework: {
-        //   chunks: 'all',
-        //   name: 'framework',
-        //   // This regex ignores nested copies of framework libraries so they're
-        //   // bundled with their issuer.
-        //   // https://github.com/vercel/next.js/pull/9012
-        //   test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
-        //   priority: 40,
-        //   // Don't let webpack eliminate this chunk (prevents this chunk from
-        //   // becoming a part of the commons chunk)
-        //   enforce: true,
-        // },
-        // lib: {
-        //   test(module: { size: Function; identifier: Function }): boolean {
-        //     return (
-        //       module.size() > 160000 &&
-        //       /node_modules[/\\]/.test(module.identifier())
-        //     )
-        //   },
-        //   name(module: {
-        //     type: string
-        //     libIdent?: Function
-        //     updateHash: (hash: crypto.Hash) => void
-        //   }): string {
-        //     const hash = crypto.createHash('sha1')
-        //     if (isModuleCSS(module)) {
-        //       module.updateHash(hash)
-        //     } else {
-        //       if (!module.libIdent) {
-        //         throw new Error(
-        //           `Encountered unknown module type: ${module.type}. Please open an issue.`
-        //         )
-        //       }
-        //
-        //       hash.update(module.libIdent({ context: dir }))
-        //     }
-        //
-        //     return hash.digest('hex').substring(0, 8)
-        //   },
-        //   priority: 30,
-        //   minChunks: 1,
-        //   reuseExistingChunk: true,
-        // },
-        // commons: {
-        //   name: 'commons',
-        //   minChunks: totalPages,
-        //   priority: 20,
-        // },
-        // shared: {
-        //   name(module, chunks) {
-        //     return (
-        //       crypto
-        //         .createHash('sha1')
-        //         .update(
-        //           chunks.reduce(
-        //             (acc: string, chunk: webpack.compilation.Chunk) => {
-        //               return acc + chunk.name
-        //             },
-        //             ''
-        //           )
-        //         )
-        //         .digest('hex') + (isModuleCSS(module) ? '_CSS' : '')
-        //     )
-        //   },
-        //   priority: 10,
-        //   minChunks: 2,
-        //   reuseExistingChunk: true,
-        // },
+        default: false,
+        vendors: false,
+        // In webpack 5 vendors was renamed to defaultVendors
+        defaultVendors: false,
+        framework: {
+          chunks: 'all',
+          name: 'framework',
+          // This regex ignores nested copies of framework libraries so they're
+          // bundled with their issuer.
+          // https://github.com/vercel/next.js/pull/9012
+          test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
+          priority: 40,
+          // Don't let webpack eliminate this chunk (prevents this chunk from
+          // becoming a part of the commons chunk)
+          enforce: true,
+        },
+        lib: {
+          test(module: { size: Function; identifier: Function }): boolean {
+            return (
+              module.size() > 160000 &&
+              /node_modules[/\\]/.test(module.identifier())
+            )
+          },
+          name(module: {
+            type: string
+            libIdent?: Function
+            updateHash: (hash: crypto.Hash) => void
+          }): string {
+            const hash = crypto.createHash('sha1')
+            if (isModuleCSS(module)) {
+              module.updateHash(hash)
+            } else {
+              if (!module.libIdent) {
+                throw new Error(
+                  `Encountered unknown module type: ${module.type}. Please open an issue.`
+                )
+              }
+
+              hash.update(module.libIdent({ context: dir }))
+            }
+
+            return hash.digest('hex').substring(0, 8)
+          },
+          priority: 30,
+          minChunks: 1,
+          reuseExistingChunk: true,
+        },
+        commons: {
+          name: 'commons',
+          minChunks: totalPages,
+          priority: 20,
+        },
+        shared: {
+          name(module, chunks) {
+            return (
+              crypto
+                .createHash('sha1')
+                .update(
+                  chunks.reduce(
+                    (acc: string, chunk: webpack.compilation.Chunk) => {
+                      return acc + chunk.name
+                    },
+                    ''
+                  )
+                )
+                .digest('hex') + (isModuleCSS(module) ? '_CSS' : '')
+            )
+          },
+          priority: 10,
+          minChunks: 2,
+          reuseExistingChunk: true,
+        },
       },
       maxInitialRequests: 25,
       minSize: 20000,
@@ -715,12 +715,12 @@ export default async function getBaseWebpackConfig(
       // ...(isWebpack5 ? { emitOnErrors: !dev } : { noEmitOnErrors: dev }),
       checkWasmTypes: false,
       nodeEnv: false,
-      // splitChunks: isServer ? false : splitChunksConfig,
-      // runtimeChunk: isServer
-      //   ? isWebpack5 && !isLikeServerless
-      //     ? { name: 'webpack-runtime' }
-      //     : undefined
-      //   : { name: CLIENT_STATIC_FILES_RUNTIME_WEBPACK },
+      splitChunks: isServer ? false : splitChunksConfig,
+      runtimeChunk: isServer
+        ? isWebpack5 && !isLikeServerless
+          ? { name: 'webpack-runtime' }
+          : undefined
+        : { name: CLIENT_STATIC_FILES_RUNTIME_WEBPACK },
       // minimize: !(dev || isServer),
       // minimizer: [
       //   // Minify JavaScript

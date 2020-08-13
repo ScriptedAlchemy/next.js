@@ -18,11 +18,15 @@ const {
 
 const prefix = assetPrefix || ''
 const webpackHMR = initWebpackHMR({ assetPrefix: prefix })
-initNextPromise.then((next)=>{
+
+export default initNextPromise.then((next)=>{
   window.next = next
   //initNext
+  console.log('next',next);
+
   next.default({ webpackHMR })
     .then(({ renderCtx, render }) => {
+      console.log('ready to render')
       initOnDemandEntries({ assetPrefix: prefix })
       if (process.env.__NEXT_BUILD_INDICATOR) initializeBuildWatcher()
       if (

@@ -54,18 +54,18 @@ let asPath = getURL()
 if (hasBasePath(asPath)) {
   asPath = delBasePath(asPath)
 }
-const pageLoader = import('./page-loader').then(({ default: PageLoader }) => {
-  return new PageLoader(buildId, prefix, page)
-})
+import PageLoader from './page-loader'
+const pageLoader = new PageLoader(buildId, prefix, page)
+
 
 const register = async ([r, f]) => {
-    return (await pageLoader).registerPage(r, f)
+    return pageLoader.registerPage(r, f)
 }
 if (window.__NEXT_P) {
   // Defer page registration for another tick. This will increase the overall
   // latency in hydrating the page, but reduce the total blocking time.
   window.__NEXT_P.map((p) => {
-    return setTimeout(() => register(p), 0)
+    // return setTimeout(() => register(p), 0)
   })
 }
 window.__NEXT_P = []
@@ -169,9 +169,9 @@ export default async ({ webpackHMR: passedWebpackHMR } = {}) => {
   if (process.env.NODE_ENV === 'development') {
     webpackHMR = passedWebpackHMR
   }
-
-  const { page: app, mod } = await (await pageLoader).loadPage('/_app')
-
+console.log('pageloader', pageLoader)
+  const { page: app, mod } = await pageLoader.loadPage('/_app')
+  console.log('afterPageLoaoder', app)
   CachedApp = app
 
   if (mod && mod.reportWebVitals) {
@@ -210,8 +210,8 @@ export default async ({ webpackHMR: passedWebpackHMR } = {}) => {
   let initialErr = hydrateErr
 
   try {
-    if(!__webpack_share_scope__.default) {
-      await __webpack_init_sharing__("default");
+    if(!__webpack_share_scopes__.default) {
+      // await __webpack_init_sharing__("default");
     }
     ;({ page: CachedComponent } = await (await pageLoader).loadPage(page))
 

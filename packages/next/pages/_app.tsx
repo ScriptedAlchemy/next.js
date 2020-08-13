@@ -1,4 +1,4 @@
-import React, { ErrorInfo } from 'react'
+import type { ErrorInfo } from 'react'
 import {
   execOnce,
   loadGetInitialProps,
@@ -30,34 +30,35 @@ async function appGetInitialProps({
   return { pageProps }
 }
 
-export default class App<P = {}, CP = {}, S = {}> extends React.Component<
-  P & AppProps<CP>,
-  S
-> {
-  static origGetInitialProps = appGetInitialProps
-  static getInitialProps = appGetInitialProps
+export default async()=> {
+  const React = (await import('react')).default
+return  class App<P = {}, CP = {}, S = {}> extends React.Component<P & AppProps<CP>,
+    S> {
+    static origGetInitialProps = appGetInitialProps
+    static getInitialProps = appGetInitialProps
 
-  // Kept here for backwards compatibility.
-  // When someone ended App they could call `super.componentDidCatch`.
-  // @deprecated This method is no longer needed. Errors are caught at the top level
-  componentDidCatch(error: Error, _errorInfo: ErrorInfo): void {
-    throw error
-  }
+    // Kept here for backwards compatibility.
+    // When someone ended App they could call `super.componentDidCatch`.
+    // @deprecated This method is no longer needed. Errors are caught at the top level
+    componentDidCatch(error: Error, _errorInfo: ErrorInfo): void {
+      throw error
+    }
 
-  render() {
-    const { router, Component, pageProps, __N_SSG, __N_SSP } = this
-      .props as AppProps<CP>
+    render() {
+      const { router, Component, pageProps, __N_SSG, __N_SSP } = this
+        .props as AppProps<CP>
 
-    return (
-      <Component
-        {...pageProps}
-        {
-          // we don't add the legacy URL prop if it's using non-legacy
-          // methods like getStaticProps and getServerSideProps
-          ...(!(__N_SSG || __N_SSP) ? { url: createUrl(router) } : {})
-        }
-      />
-    )
+      return (
+        <Component
+          {...pageProps}
+          {
+            // we don't add the legacy URL prop if it's using non-legacy
+            // methods like getStaticProps and getServerSideProps
+            ...(!(__N_SSG || __N_SSP) ? { url: createUrl(router) } : {})
+          }
+        />
+      )
+    }
   }
 }
 

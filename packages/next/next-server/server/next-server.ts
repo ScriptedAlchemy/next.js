@@ -253,6 +253,7 @@ export default class Server {
       this.onErrorMiddleware({ err })
     }
     if (this.quiet) return
+    // tslint:disable-next-line
     console.error(err)
   }
 
@@ -974,7 +975,8 @@ export default class Server {
     if (pathname === '/404') {
       res.statusCode = 404
     }
-
+    const App = await components.App()
+    Object.assign(components, { App })
     // handle static page
     if (typeof components.Component === 'string') {
       return components.Component
@@ -1234,6 +1236,7 @@ export default class Server {
   ): Promise<string | null> {
     try {
       const result = await this.findPageComponents(pathname, query)
+
       if (result) {
         try {
           return await this.renderToHTMLWithComponents(

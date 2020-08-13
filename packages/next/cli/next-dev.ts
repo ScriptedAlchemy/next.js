@@ -30,6 +30,7 @@ const nextDev: cliCommand = (argv) => {
     throw error
   }
   if (args['--help']) {
+    // tslint:disable-next-line
     console.log(`
       Description
         Starts the application in development mode (hot-code reloading, error
@@ -118,8 +119,10 @@ const nextDev: cliCommand = (argv) => {
             errorMessage += `\nUse \`npm run ${nextScript[0]} -- -p <some other port>\`.`
           }
         }
+        // tslint:disable-next-line
         console.error(errorMessage)
       } else {
+        // tslint:disable-next-line
         console.error(err)
       }
       process.nextTick(() => process.exit(1))
