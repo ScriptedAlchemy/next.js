@@ -4,7 +4,7 @@
   "scripts": {
     "watch": "nx watch --projects=nextjs-mf --includeDependentProjects -- pnpm dev",
     "build": "NEXT_PRIVATE_LOCAL_WEBPACK=true ../../packages/next/dist/bin/next build",
-    "dev": "echo 'not allowed only run build'",
+    "dev": "NEXT_PRIVATE_LOCAL_WEBPACK=true ../../packages/next/dist/bin/next dev",
     "build:next:core": "cd ../.. && pnpm build-no-mf > /dev/null",
     "lint": "next lint",
     "lint-staged": "lint-staged",
