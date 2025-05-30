@@ -93,6 +93,10 @@ export default function transformSource(
     )
   }
 
+  if (module.issuer?.type === 'consume-shared-module') {
+    resourceKey = (module as any).issuer.options.shareKey
+  }
+
   // A client boundary.
   if (buildInfo.rsc?.type === RSC_MODULE_TYPES.client) {
     const assumedSourceType = getAssumedSourceType(

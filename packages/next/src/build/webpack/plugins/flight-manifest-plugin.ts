@@ -327,6 +327,19 @@ export class ClientReferenceManifestPlugin {
             ? mod.identifier().slice(mod.identifier().lastIndexOf('!') + 1)
             : mod.resource
 
+        // consume shared resource is undefined
+        if (mod.type === 'consume-shared-module') {
+          // instead of using resource as the lookup key, we use shareKey from federation to provide known lookup
+          const shareKey = (mod as any).options?.shareKey || ''
+          resource = shareKey
+        } else {
+          console.log('[ManifestPlugin] regular module', {
+            modId,
+            resource,
+            modType: mod.type,
+          })
+        }
+
         if (!resource) {
           return
         }
@@ -375,7 +388,14 @@ export class ClientReferenceManifestPlugin {
           resource = formatBarrelOptimizedResource(resource, mod.matchResource)
         }
 
+        if (mod.type === 'consume-shared-module') {
+          ssrNamedModuleId = (mod as any).options.shareKey
+        }
+
         function addClientReference() {
+          // if (mod.type === 'consume-shared-module') {
+          //   modId = (mod as any).options?.shareKey
+          // }
           const isAsync = Boolean(
             compilation.moduleGraph.isAsync(mod) ||
               pluginState.ssrModules[ssrNamedModuleId]?.async ||
@@ -399,10 +419,14 @@ export class ClientReferenceManifestPlugin {
         function addSSRIdMapping() {
           const exportName = resource
           const moduleInfo = pluginState.ssrModules[ssrNamedModuleId]
+          const mappingId = mod.type === 'consume-shared-module' ? modId : modId
 
           if (moduleInfo) {
-            moduleIdMapping[modId] = moduleIdMapping[modId] || {}
-            moduleIdMapping[modId]['*'] = {
+            if (mod.type === 'consume-shared-module') {
+              debugger
+            }
+            moduleIdMapping[mappingId] = moduleIdMapping[mappingId] || {}
+            moduleIdMapping[mappingId]['*'] = {
               ...manifest.clientModules[exportName],
               // During SSR, we don't have external chunks to load on the server
               // side with our architecture of Webpack / Turbopack. We can keep
@@ -411,13 +435,18 @@ export class ClientReferenceManifestPlugin {
               id: moduleInfo.moduleId,
               async: moduleInfo.async,
             }
+          } else {
+            if (mod.type === 'consume-shared-module') {
+              debugger
+            }
           }
 
           const edgeModuleInfo = pluginState.edgeSsrModules[ssrNamedModuleId]
 
           if (edgeModuleInfo) {
-            edgeModuleIdMapping[modId] = edgeModuleIdMapping[modId] || {}
-            edgeModuleIdMapping[modId]['*'] = {
+            edgeModuleIdMapping[mappingId] =
+              edgeModuleIdMapping[mappingId] || {}
+            edgeModuleIdMapping[mappingId]['*'] = {
               ...manifest.clientModules[exportName],
               // During SSR, we don't have external chunks to load on the server
               // side with our architecture of Webpack / Turbopack. We can keep
@@ -432,10 +461,10 @@ export class ClientReferenceManifestPlugin {
         function addRSCIdMapping() {
           const exportName = resource
           const moduleInfo = pluginState.rscModules[rscNamedModuleId]
-
+          const mappingId = mod.type === 'consume-shared-module' ? modId : modId
           if (moduleInfo) {
-            rscIdMapping[modId] = rscIdMapping[modId] || {}
-            rscIdMapping[modId]['*'] = {
+            rscIdMapping[mappingId] = rscIdMapping[mappingId] || {}
+            rscIdMapping[mappingId]['*'] = {
               ...manifest.clientModules[exportName],
               // During SSR, we don't have external chunks to load on the server
               // side with our architecture of Webpack / Turbopack. We can keep
@@ -449,8 +478,8 @@ export class ClientReferenceManifestPlugin {
           const edgeModuleInfo = pluginState.ssrModules[rscNamedModuleId]
 
           if (edgeModuleInfo) {
-            edgeRscIdMapping[modId] = edgeRscIdMapping[modId] || {}
-            edgeRscIdMapping[modId]['*'] = {
+            edgeRscIdMapping[mappingId] = edgeRscIdMapping[mappingId] || {}
+            edgeRscIdMapping[mappingId]['*'] = {
               ...manifest.clientModules[exportName],
               // During SSR, we don't have external chunks to load on the server
               // side with our architecture of Webpack / Turbopack. We can keep

@@ -200,11 +200,17 @@ export class FlightClientEntryPlugin {
         const modQuery = mod.resourceResolveData?.query || ''
         // query is already part of mod.resource
         // so it's only necessary to add it for matchResource or mod.resourceResolveData
-        const modResource = modPath
+        let modResource = modPath
           ? modPath.startsWith(BARREL_OPTIMIZATION_PREFIX)
             ? formatBarrelOptimizedResource(mod.resource, modPath)
             : modPath + modQuery
           : mod.resource
+
+        // Handle consume-shared-module by using shareKey for predictable lookups
+        if (mod.type === 'consume-shared-module') {
+          const shareKey = (mod as any).options?.shareKey || ''
+          modResource = shareKey
+        }
 
         if (typeof modId !== 'undefined' && modResource) {
           if (mod.layer === WEBPACK_LAYERS.reactServerComponents) {
@@ -239,6 +245,10 @@ export class FlightClientEntryPlugin {
           if (!ssrNamedModuleId.startsWith('.')) {
             // TODO use getModuleId instead
             ssrNamedModuleId = `./${normalizePathSep(ssrNamedModuleId)}`
+          }
+          if (mod.type === 'consume-shared-module') {
+            // dont use ./ prefix on consume-shared
+            ssrNamedModuleId = modResource
           }
 
           const moduleInfo: ModuleInfo = {
@@ -746,6 +756,32 @@ export class FlightClientEntryPlugin {
         )
 
         return
+      } else if (mod.type === 'consume-shared-module') {
+        // Handle consume-shared-module by getting the actual module and checking if it's a client component
+        const actualModule = compilation.moduleGraph.getModule(
+          mod.blocks[0].dependencies[0]
+        ) as webpack.NormalModule
+        if (actualModule && isClientComponentEntryModule(actualModule)) {
+          if (
+            modResource &&
+            !visitedOfClientComponentsTraverse.has(modResource)
+          ) {
+            visitedOfClientComponentsTraverse.add(modResource)
+
+            if (!clientComponentImports[modResource]) {
+              clientComponentImports[modResource] = new Set()
+            }
+            debugger
+            addClientImport(
+              actualModule,
+              modResource,
+              clientComponentImports,
+              importedIdentifiers,
+              true
+            )
+            return
+          }
+        }
       }
 
       getModuleReferencesInOrder(mod, compilation.moduleGraph).forEach(
@@ -1182,6 +1218,10 @@ function getModuleResource(mod: webpack.NormalModule): string {
 
   if (mod.resource === `?${WEBPACK_RESOURCE_QUERIES.metadataRoute}`) {
     return getMetadataRouteResource(mod.rawRequest).filePath
+  }
+
+  if (mod.type === 'consume-shared-module') {
+    return (mod as any).libIdent()
   }
 
   return modResource
