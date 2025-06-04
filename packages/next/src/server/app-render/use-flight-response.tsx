@@ -26,37 +26,12 @@ export function useFlightStream<T>(
   const response = flightResponses.get(flightStream)
 
   if (response) {
-    console.log('[USE-FLIGHT-STREAM] Returning cached response')
     return response
   }
-
-  // console.log('[USE-FLIGHT-STREAM] Creating new flight response with manifest:', clientReferenceManifest);
-
-  // Log clientModules to see if consume-shared-module entries are there
-  const clientModuleKeys = Object.keys(
-    clientReferenceManifest.clientModules || {}
-  )
-  console.log('[USE-FLIGHT-STREAM] ClientModules keys:', clientModuleKeys)
 
   const moduleMap = isEdgeRuntime
     ? clientReferenceManifest.edgeSSRModuleMapping
     : clientReferenceManifest.ssrModuleMapping
-
-  console.log('[USE-FLIGHT-STREAM] Using moduleMap:', {
-    isEdgeRuntime,
-    moduleMapType: isEdgeRuntime ? 'edgeSSRModuleMapping' : 'ssrModuleMapping',
-    moduleMapKeys: Object.keys(moduleMap || {}), // Show all keys
-    moduleMapKeysTotal: Object.keys(moduleMap || {}).length,
-  })
-
-  // Log some sample entries from the moduleMap
-  const moduleMapEntries = Object.entries(moduleMap || {})
-  if (moduleMapEntries.length > 0) {
-    console.log(
-      '[USE-FLIGHT-STREAM] Sample moduleMap entries:',
-      moduleMapEntries
-    )
-  }
 
   // react-server-dom-webpack/client.edge must not be hoisted for require cache clearing to work correctly
   const { createFromReadableStream } =
@@ -69,18 +44,10 @@ export function useFlightStream<T>(
     serverModuleMap: null,
   }
 
-  console.log('[USE-FLIGHT-STREAM] Creating serverConsumerManifest:', {
-    moduleLoading: serverConsumerManifest.moduleLoading,
-    moduleMapKeys: Object.keys(serverConsumerManifest.moduleMap || {}),
-    serverModuleMap: serverConsumerManifest.serverModuleMap,
-  })
-
   const newResponse = createFromReadableStream<T>(flightStream, {
     serverConsumerManifest,
     nonce,
   })
-
-  console.log('[USE-FLIGHT-STREAM] Created flight response, caching it')
 
   flightResponses.set(flightStream, newResponse)
 
