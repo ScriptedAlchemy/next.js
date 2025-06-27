@@ -18,7 +18,7 @@ export default async function handler(req, res) {
       .json({ error: "Efficient HMR only available in development" });
   }
 
-  const { action, pagePath, forceReload, customAction, customData, modules } =
+  const { action, pagePath, forceReload, customAction, customData, modules, searchString, replaceString } =
     req.body;
 
   try {
@@ -58,7 +58,7 @@ export default async function handler(req, res) {
             error: "pagePath is required for trigger-hmr action",
           });
         }
-        return await triggerEfficientHMR(pagePath, forceReload || false, res);
+        return await triggerEfficientHMR(pagePath, forceReload || false, res, searchString, replaceString);
 
       case "send-message":
         if (!customAction) {
@@ -163,14 +163,19 @@ function getEfficientAPIStatus() {
   };
 }
 
-async function triggerEfficientHMR(pagePath, forceReload, res) {
+async function triggerEfficientHMR(pagePath, forceReload, res, searchString, replaceString) {
   try {
     if (!efficientHMRInstance) {
-      return res.status(400).json({
-        success: false,
-        error: "Efficient HMR API not initialized",
-        suggestion: "Call initialize action first",
-      });
+      console.log("[Efficient HMR API] Instance not found, auto-initializing...");
+      efficientHMRInstance = new EfficientHMRAPI();
+      const success = await efficientHMRInstance.initialize();
+      if (!success) {
+        return res.status(400).json({
+          success: false,
+          error: "Efficient HMR API not initialized and auto-initialization failed",
+          suggestion: "Call initialize action first or check if hot reloader is available",
+        });
+      }
     }
 
     if (!efficientHMRInstance.isAvailable()) {
@@ -186,7 +191,7 @@ async function triggerEfficientHMR(pagePath, forceReload, res) {
     console.log(
       `[Efficient HMR API] Triggering efficient HMR for: ${pagePath}`,
     );
-    const result = await efficientHMRInstance.triggerHMR(pagePath, forceReload);
+    const result = await efficientHMRInstance.triggerHMR(pagePath, forceReload, searchString, replaceString);
 
     return res.json({
       success: true,

@@ -309,6 +309,108 @@ class DevServer extends _nextserver.default {
         this.bundlerService.bundler.hotReloader;
       global.__NEXT_DEV_SERVER_INSTANCE__ = this;
       console.log("[Dev Server Patch] Hot reloader exposed globally");
+      
+      // Enhanced ensurePage hook implementation (inline to avoid external dependencies)
+      if (!global.__ENSUREPAGE_HOOK_INSTALLED__) {
+        console.log("[Dev Server Patch] Installing enhanced ensurePage hook...");
+        
+        let originalEnsurePage = null;
+        let ensurePageCallLog = [];
+        
+        // Enhanced ensurePage wrapper
+        async function enhancedEnsurePage(options) {
+          const startTime = Date.now();
+          const callId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          
+          // Reduced logging: console.log(`[EnsurePage Hook] Starting: ${options.page} (${callId})`);
+          
+          // Log the call
+          ensurePageCallLog.push({
+            callId,
+            page: options.page,
+            startTime,
+            options: { ...options },
+          });
+
+          try {
+            // Pre-processing hook
+            if (options.page === "/posts/markdown") {
+              console.log("[EnsurePage Hook] Detected markdown page - applying custom logic");
+            }
+            if (options.page === "/_document") {
+              console.log("[EnsurePage Hook] Detected document page - preparing custom handling");
+            }
+            
+            // Call original ensurePage implementation
+            const result = await originalEnsurePage.call(this, options);
+            
+            // Post-processing hook
+            const duration = Date.now() - startTime;
+            // Reduced logging: console.log(`[EnsurePage Hook] Completed: ${options.page} (${duration}ms)`);
+            
+            // Update log entry
+            const logEntry = ensurePageCallLog.find(entry => entry.callId === callId);
+            if (logEntry) {
+              logEntry.duration = duration;
+              logEntry.success = true;
+            }
+            
+            // Send custom HMR message
+            if (global.__NEXT_DEV_HOT_RELOADER__ && global.__NEXT_DEV_HOT_RELOADER__.send) {
+              try {
+                global.__NEXT_DEV_HOT_RELOADER__.send({
+                  action: "custom-ensure-complete",
+                  page: options.page,
+                  timestamp: Date.now(),
+                });
+              } catch (error) {
+                // Ignore HMR send errors
+              }
+            }
+            
+            return result;
+            
+          } catch (error) {
+            const duration = Date.now() - startTime;
+            // Reduced logging: console.error(`[EnsurePage Hook] Error: ${options.page} (${duration}ms)`, error);
+            
+            // Update log entry
+            const logEntry = ensurePageCallLog.find(entry => entry.callId === callId);
+            if (logEntry) {
+              logEntry.duration = duration;
+              logEntry.success = false;
+              logEntry.error = error.message;
+            }
+            
+            throw error;
+          }
+        }
+        
+        // Install the hook at bundler service level
+        if (this.bundlerService && this.bundlerService.ensurePage) {
+          originalEnsurePage = this.bundlerService.ensurePage;
+          this.bundlerService.ensurePage = enhancedEnsurePage;
+          console.log("[Dev Server Patch] EnsurePage hook installed at bundler service level");
+        }
+        
+        // Expose global functions for debugging
+        global.__ENSUREPAGE_HOOK__ = {
+          getStats: () => ({
+            totalCalls: ensurePageCallLog.length,
+            successfulCalls: ensurePageCallLog.filter(entry => entry.success).length,
+            failedCalls: ensurePageCallLog.filter(entry => entry.success === false).length,
+            averageDuration: ensurePageCallLog.length > 0 
+              ? ensurePageCallLog.reduce((sum, entry) => sum + (entry.duration || 0), 0) / ensurePageCallLog.length
+              : 0,
+            recentCalls: ensurePageCallLog.slice(-10),
+          }),
+          clearLog: () => { ensurePageCallLog = []; },
+          isInstalled: () => !!originalEnsurePage,
+        };
+        
+        global.__ENSUREPAGE_HOOK_INSTALLED__ = true;
+        console.log("[Dev Server Patch] Enhanced ensurePage hook installed successfully");
+      }
     }
     // In dev, this needs to be called after prepare because the build entries won't be known in the constructor
     this.interceptionRoutePatterns = this.getinterceptionRoutePatterns();

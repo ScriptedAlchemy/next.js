@@ -142,15 +142,34 @@ class ServerOnlyHMR {
   invalidateModule(modulePath) {
     try {
       const fullPath = path.resolve(process.cwd(), modulePath);
-
-      if (require.cache[fullPath]) {
-        this.safeDeleteFromCache(fullPath);
-        console.log(`[Server HMR] Invalidated module: ${fullPath}`);
-        return { success: true, path: fullPath };
-      } else {
-        console.warn(`[Server HMR] Module not in cache: ${fullPath}`);
-        return { success: false, error: "Module not in cache", path: fullPath };
+      
+      // Try multiple strategies to find the module in cache
+      const cacheKeys = Object.keys(require.cache);
+      let cacheKey = null;
+      
+      // Strategy 1: Exact path match (normalized)
+      cacheKey = cacheKeys.find(key => path.normalize(key) === path.normalize(fullPath));
+      
+      // Strategy 2: If not found, try relative matching
+      if (!cacheKey) {
+        const relativeTarget = path.relative(process.cwd(), fullPath);
+        cacheKey = cacheKeys.find(key => {
+          const relativeKey = path.relative(process.cwd(), key);
+          return relativeKey === relativeTarget;
+        });
       }
+      
+      // Strategy 3: Check if module was loaded after file edit (common in HMR)
+      if (!cacheKey) {
+        // Just invalidate all related pages instead
+        this.clearAllPages();
+        console.log(`[Server HMR] Module not found in cache, cleared all pages instead: ${path.basename(fullPath)}`);
+        return { success: true, path: fullPath, fallback: "cleared-all-pages" };
+      }
+
+      this.safeDeleteFromCache(cacheKey);
+      console.log(`[Server HMR] Invalidated module: ${cacheKey}`);
+      return { success: true, path: cacheKey };
     } catch (error) {
       console.error("[Server HMR] Error invalidating module:", error);
       return { success: false, error: error.message, path: modulePath };

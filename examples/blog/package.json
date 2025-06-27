@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "dev": "npm run patch:apply && next",
-    "build": "node ./scripts/gen-rss.js && next build",
+    "build": "next build",
     "start": "next start",
     "patch:apply": "cp patches/next-dev-server.js node_modules/next/dist/server/dev/next-dev-server.js && echo '✅ Applied Next.js dev server patch'",
     "patch:restore": "npm install --force && echo '✅ Restored original Next.js files'",
@@ -32,6 +32,7 @@
     "@types/node": "^18.0.0",
     "@types/react": "^18.0.14",
     "@types/react-dom": "^18.0.5",
+    "kill-port": "^2.0.1",
     "typescript": "^4.7.4"
   }
 }

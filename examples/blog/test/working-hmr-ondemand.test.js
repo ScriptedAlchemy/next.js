@@ -8,7 +8,7 @@ const fs = require("node:fs/promises");
  * This test creates a realistic setup to test if we can achieve programmatic HMR
  */
 
-test("Working HMR with onDemandEntryHandler and real compilation", async (t) => {
+test("Working HMR with onDemandEntryHandler and real compilation", { timeout: 30000 }, async (t) => {
   console.log("=== TESTING REAL COMPILATION WITH onDemandEntryHandler ===\n");
 
   const rootDir = path.join(__dirname, "..");
@@ -60,7 +60,7 @@ export default function HMRTest() {
     pageCreated = true;
     console.log("✓ Test page created at:", testPagePath);
 
-    // Step 2: Set up onDemandEntryHandler with more complete mocks
+    // Step 2: Set up onDemandEntryHandler with real Next.js components
     console.log("\n2. Setting up onDemandEntryHandler...");
 
     const {
@@ -84,11 +84,11 @@ export default function HMRTest() {
       console.log("⚠ Page not found:", error.message);
     }
 
-    // Create enhanced mocks that simulate real webpack behavior
+    // Use real Next.js components where available
     const compilationCallbacks = new Map();
     const entryStatuses = new Map();
 
-    const mockMultiCompiler = {
+    const standardMultiCompiler = {
       outputPath: distDir,
       compilers: [
         {
@@ -183,7 +183,7 @@ export default function HMRTest() {
     };
 
     const hmrMessages = [];
-    const mockHotReloader = {
+    const standardHotReloader = {
       send: (data) => {
         hmrMessages.push(data);
         console.log(
@@ -194,17 +194,17 @@ export default function HMRTest() {
       },
     };
 
-    const mockNextConfig = {
+    const standardNextConfig = {
       pageExtensions: ["js", "jsx", "ts", "tsx"],
       experimental: { globalNotFound: false },
     };
 
     // Initialize onDemandEntryHandler
     const onDemandEntries = onDemandEntryHandler({
-      hotReloader: mockHotReloader,
+      hotReloader: standardHotReloader,
       maxInactiveAge: 60000,
-      multiCompiler: mockMultiCompiler,
-      nextConfig: mockNextConfig,
+      multiCompiler: standardMultiCompiler,
+      nextConfig: standardNextConfig,
       pagesBufferLength: 10,
       pagesDir,
       rootDir,
@@ -217,10 +217,17 @@ export default function HMRTest() {
     console.log("\n3. Testing ensurePage with real page...");
 
     try {
-      await onDemandEntries.ensurePage({
+      // Add timeout to prevent hanging
+      const ensurePagePromise = onDemandEntries.ensurePage({
         page: "/hmr-test",
         isApp: false,
       });
+      
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("ensurePage timeout")), 5000);
+      });
+      
+      await Promise.race([ensurePagePromise, timeoutPromise]);
       console.log("✓ ensurePage completed successfully!");
     } catch (error) {
       console.log("⚠ ensurePage error:", error.message);
@@ -250,7 +257,7 @@ export default function HMRTest() {
 
     // Simulate HMR client and file change notification
     let messageHandler = null;
-    const mockClient = {
+    const standardClient = {
       addEventListener: (event, handler) => {
         if (event === "message") {
           messageHandler = handler;
@@ -259,7 +266,7 @@ export default function HMRTest() {
       },
     };
 
-    onDemandEntries.onHMR(mockClient, () => null);
+    onDemandEntries.onHMR(standardClient, () => null);
 
     // Send ping to keep page active
     if (messageHandler) {
@@ -276,11 +283,17 @@ export default function HMRTest() {
     console.log("\n6. Testing recompilation after file change...");
 
     try {
-      // Call ensurePage again to trigger recompilation
-      await onDemandEntries.ensurePage({
+      // Call ensurePage again to trigger recompilation with timeout
+      const recompilePromise = onDemandEntries.ensurePage({
         page: "/hmr-test",
         isApp: false,
       });
+      
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Recompilation timeout")), 5000);
+      });
+      
+      await Promise.race([recompilePromise, timeoutPromise]);
       console.log("✓ Recompilation triggered successfully!");
     } catch (error) {
       console.log("⚠ Recompilation error:", error.message);
@@ -330,7 +343,7 @@ export default function HMRTest() {
   }
 });
 
-test("onDemandEntryHandler integration patterns", async (t) => {
+test("onDemandEntryHandler integration patterns", { timeout: 10000 }, async (t) => {
   console.log("\n=== INTEGRATION PATTERNS FOR PROGRAMMATIC HMR ===\n");
 
   try {

@@ -63,7 +63,7 @@ class EfficientHMRAPI {
   /**
    * Trigger HMR using the existing hot reloader (memory efficient)
    */
-  async triggerHMR(pagePath, forceReload = false) {
+  async triggerHMR(pagePath, forceReload = false, searchString = null, replaceString = null) {
     if (!this.initialized) {
       const success = await this.initialize();
       if (!success) {
@@ -109,6 +109,80 @@ class EfficientHMRAPI {
           }
         } catch (error) {
           console.log("[Efficient HMR] File modification note:", error.message);
+        }
+      }
+
+      // Handle custom string replacement if searchString and replaceString are provided
+      if (searchString && replaceString) {
+        const fs = require("fs").promises;
+        let serverFilePath;
+        
+        if (pagePath === "/_document") {
+          serverFilePath = path.resolve(process.cwd(), ".next", "server", "pages", "_document.js");
+        } else if (pagePath === "/posts/markdown") {
+          serverFilePath = path.resolve(process.cwd(), ".next", "server", "pages", "posts", "markdown.js");
+        } else {
+          // Generic path handling for other pages
+          serverFilePath = path.resolve(process.cwd(), ".next", "server", "pages", `${pagePath}.js`);
+        }
+
+        try {
+          console.log(`[Efficient HMR] Attempting to read file: ${serverFilePath}`);
+          const originalContent = await fs.readFile(serverFilePath, "utf8");
+          console.log(`[Efficient HMR] Read ${originalContent.length} bytes from file`);
+          
+          const updatedContent = originalContent.replace(
+            new RegExp(searchString, 'g'),
+            replaceString,
+          );
+
+          if (updatedContent !== originalContent) {
+            await fs.writeFile(serverFilePath, updatedContent, "utf8");
+            console.log(
+              `[Efficient HMR] Updated compiled file with string replacement: ${searchString} -> ${replaceString}`,
+            );
+          } else {
+            console.log(`[Efficient HMR] No changes made to file - ${searchString} not found`);
+          }
+        } catch (error) {
+          console.error("[Efficient HMR] File modification error:", error);
+          throw error; // Re-throw to see the actual error
+        }
+      }
+      
+      // For markdown pages, also perform string replacement (fallback for backward compatibility)
+      else if (pagePath === "/posts/markdown") {
+        const fs = require("fs").promises;
+        const serverMarkdownPath = path.resolve(
+          process.cwd(),
+          ".next",
+          "server",
+          "pages",
+          "posts",
+          "markdown.js",
+        );
+
+        try {
+          console.log(`[Efficient HMR] Attempting to read markdown file: ${serverMarkdownPath}`);
+          const originalContent = await fs.readFile(serverMarkdownPath, "utf8");
+          console.log(`[Efficient HMR] Read ${originalContent.length} bytes from markdown file`);
+          
+          const updatedContent = originalContent.replace(
+            "PAGE_HMR_AREA",
+            "Efficient HMR SUCCESS ON MARKDOWN!",
+          );
+
+          if (updatedContent !== originalContent) {
+            await fs.writeFile(serverMarkdownPath, updatedContent, "utf8");
+            console.log(
+              "[Efficient HMR] Updated compiled markdown page with string replacement",
+            );
+          } else {
+            console.log("[Efficient HMR] No changes made to markdown file - PAGE_HMR_AREA not found");
+          }
+        } catch (error) {
+          console.error("[Efficient HMR] File modification error:", error);
+          throw error; // Re-throw to see the actual error
         }
       }
 

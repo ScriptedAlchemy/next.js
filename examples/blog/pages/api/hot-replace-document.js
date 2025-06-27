@@ -1,9 +1,10 @@
-// API endpoint for server-side hot reloading (cache invalidation approach)
-// This mirrors Next.js's internal approach using cache clearing, not webpack HMR
-const fs = require("fs");
-const path = require("path");
+// Hot Replace Document API endpoint - follows same pattern as other HMR tests
+// Modifies compiled files in .next/server/pages/ instead of source files
 
-export default function handler(req, res) {
+const path = require("path");
+const fs = require("fs").promises;
+
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -11,244 +12,177 @@ export default function handler(req, res) {
   if (process.env.NODE_ENV !== "development") {
     return res
       .status(400)
-      .json({ error: "Hot reloading only available in development" });
+      .json({ error: "Hot replace document only available in development" });
   }
 
+  const { action, searchString, replaceString } = req.body;
+
   try {
-    console.log("[Hot Replace Document] Processing webpack chunk replacement");
+    console.log(`[Hot Replace Document API] Processing action: ${action}`);
 
-    // Read the webpack chunk from document_replace_chunk.js file
-    const chunkPath = path.join(process.cwd(), "document_replace_chunk.js");
-    let chunkContent;
-    try {
-      chunkContent = fs.readFileSync(chunkPath, "utf8");
-      console.log(
-        "[Hot Replace Document] Read webpack chunk from document_replace_chunk.js",
-      );
-    } catch (error) {
-      console.error(
-        "[Hot Replace Document] Could not read document_replace_chunk.js:",
-        error.message,
-      );
-      return res.status(500).json({
-        error: "Could not read chunk file",
-        message: error.message,
-      });
-    }
-
-    // Try to process the webpack chunk to replace the document
-    // This demonstrates chunk-based replacement vs simple file replacement
-    try {
-      // Parse the webpack chunk content to extract the compiled document
-      // eslint-disable-next-line no-new-func
-      const chunkFunction = new Function(
-        "exports",
-        "require",
-        "module",
-        chunkContent,
-      );
-      const chunkExports = {};
-
-      // Execute the chunk to get the compiled modules
-      chunkFunction(chunkExports, require, { exports: chunkExports });
-
-      console.log(
-        "[Hot Replace Document] Successfully processed webpack chunk",
-      );
-      console.log(`[Hot Replace Document] Chunk ID: ${chunkExports.id}`);
-      console.log(
-        `[Hot Replace Document] Module count: ${chunkExports.modules ? Object.keys(chunkExports.modules).length : 0}`,
-      );
-
-      // Generate the source document content that would produce the same output
-      // This simulates applying the chunk's compiled result back to source
-      const documentContent = `import { Html, Head, Main, NextScript } from "next/document";
-
-export default function Document() {
-  const meta = {
-    title: "Next.js Blog Starter Kit", 
-    description: "Clone and deploy your own Next.js portfolio in minutes.",
-    image: "https://assets.vercel.com/image/upload/q_auto/front/vercel/dps.png",
-  };
-
-  return (
-    <Html lang="en">
-      <Head>
-        <meta name="robots" content="follow, index" />
-        <meta name="description" content={meta.description} />
-        <meta property="og:site_name" content={meta.title} />
-        <meta property="og:description" content={meta.description} />
-        <meta property="og:title" content={meta.title} />
-        <meta property="og:image" content={meta.image} />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@yourname" />
-        <meta name="twitter:title" content={meta.title} />
-        <meta name="twitter:description" content={meta.description} />
-        <meta name="twitter:image" content={meta.image} />
-      </Head>
-      <body>
-        <h1>Hello world!!</h1>
-        <Main />
-        <NextScript />
-      </body>
-    </Html>
-  );
-}
-`;
-
-      // Write the updated file (triggers Next.js file watcher)
-      const documentPath = path.join(process.cwd(), "pages", "_document.tsx");
-      fs.writeFileSync(documentPath, documentContent);
-
-      // Clear caches using the same approach as Next.js NextJsRequireCacheHotReloader
-      if (global.__SERVER_HMR__) {
-        // Use our server-side cache invalidation (mirrors Next.js approach)
-        global.__SERVER_HMR__.clearPageCache("_document.tsx");
-        global.__SERVER_HMR__.clearAllPages();
-      } else {
-        // Fallback: manual cache invalidation (same as Next.js deleteFromRequireCache)
-        const documentModulePath = path.resolve(
-          process.cwd(),
-          "pages/_document.tsx",
-        );
-        const nextDocumentPath = path.resolve(
-          process.cwd(),
-          ".next/server/pages/_document.js",
-        );
-
-        [documentModulePath, nextDocumentPath].forEach((modulePath) => {
-          if (require.cache[modulePath]) {
-            const mod = require.cache[modulePath];
-
-            // Remove child references from all parent modules (Next.js approach)
-            for (const parent of Object.values(require.cache)) {
-              if (parent?.children) {
-                const idx = parent.children.indexOf(mod);
-                if (idx >= 0) parent.children.splice(idx, 1);
-              }
-            }
-
-            // Remove parent references from external modules (Next.js approach)
-            for (const child of mod.children) {
-              if (child) child.parent = null;
-            }
-
-            // Delete from cache (Next.js approach)
-            delete require.cache[modulePath];
-            console.log(
-              `[Hot Replace Document] Cleared cache for: ${modulePath}`,
-            );
-          }
+    switch (action) {
+      case "test":
+        return res.json({
+          success: true,
+          message: "Hot Replace Document API is working",
+          method: "compiled-file-string-replacement",
+          availableActions: ["test", "status", "trigger-replace"],
+          timestamp: new Date().toISOString(),
         });
-      }
 
-      return res.status(200).json({
-        success: true,
-        message:
-          "Document hot replaced using webpack chunk processing + cache invalidation",
-        method: "chunk-processing-with-cache-invalidation",
-        chunkId: chunkExports.id,
-        moduleCount: chunkExports.modules
-          ? Object.keys(chunkExports.modules).length
-          : 0,
-        approach: "chunk-based-replacement",
-      });
-    } catch (chunkError) {
-      console.warn(
-        "[Hot Replace Document] Chunk processing failed, using fallback:",
-        chunkError.message,
-      );
-
-      // Fallback: direct file replacement with cache invalidation
-      const fallbackContent = `import { Html, Head, Main, NextScript } from "next/document";
-
-export default function Document() {
-  const meta = {
-    title: "Next.js Blog Starter Kit",
-    description: "Clone and deploy your own Next.js portfolio in minutes.",
-    image: "https://assets.vercel.com/image/upload/q_auto/front/vercel/dps.png",
-  };
-
-  return (
-    <Html lang="en">
-      <Head>
-        <meta name="robots" content="follow, index" />
-        <meta name="description" content={meta.description} />
-        <meta property="og:site_name" content={meta.title} />
-        <meta property="og:description" content={meta.description} />
-        <meta property="og:title" content={meta.title} />
-        <meta property="og:image" content={meta.image} />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@yourname" />
-        <meta name="twitter:title" content={meta.title} />
-        <meta name="twitter:description" content={meta.description} />
-        <meta name="twitter:image" content={meta.image} />
-      </Head>
-      <body>
-        <h1>Hello world!!</h1>
-        <Main />
-        <NextScript />
-      </body>
-    </Html>
-  );
-}
-`;
-
-      // Write fallback content
-      const documentPath = path.join(process.cwd(), "pages", "_document.tsx");
-      fs.writeFileSync(documentPath, fallbackContent);
-
-      // Clear caches using cache invalidation approach
-      if (global.__SERVER_HMR__) {
-        global.__SERVER_HMR__.clearPageCache("_document.tsx");
-        global.__SERVER_HMR__.clearAllPages();
-      } else {
-        // Manual cache invalidation (Next.js approach)
-        const documentModulePath = path.resolve(
+      case "status":
+        const serverDocPath = path.join(
           process.cwd(),
-          "pages/_document.tsx",
-        );
-        const nextDocumentPath = path.resolve(
-          process.cwd(),
-          ".next/server/pages/_document.js",
+          ".next",
+          "server",
+          "pages",
+          "_document.js",
         );
 
-        [documentModulePath, nextDocumentPath].forEach((modulePath) => {
-          if (require.cache[modulePath]) {
-            const mod = require.cache[modulePath];
+        let serverDocExists = false;
+        let serverDocSize = 0;
+        let hasPlaceholder = false;
 
-            // Remove child references (Next.js approach)
-            for (const parent of Object.values(require.cache)) {
-              if (parent?.children) {
-                const idx = parent.children.indexOf(mod);
-                if (idx >= 0) parent.children.splice(idx, 1);
-              }
-            }
+        try {
+          const serverStats = await fs.stat(serverDocPath);
+          serverDocExists = true;
+          serverDocSize = serverStats.size;
 
-            // Remove parent references (Next.js approach)
-            for (const child of mod.children) {
-              if (child) child.parent = null;
-            }
+          // Check if document contains PLACEHOLDER
+          const content = await fs.readFile(serverDocPath, "utf8");
+          hasPlaceholder = content.includes("PLACEHOLDER");
+        } catch (error) {
+          // Server doc doesn't exist
+        }
 
-            // Delete from cache (Next.js approach)
-            delete require.cache[modulePath];
-          }
+        return res.json({
+          success: true,
+          status: {
+            serverDocPath,
+            serverDocExists,
+            serverDocSize,
+            hasPlaceholder,
+            approach: "string-replacement-in-compiled-file",
+            note: "Modifies .next/server/pages/_document.js directly",
+          },
         });
-      }
 
-      return res.status(200).json({
-        success: true,
-        message: "Document hot replaced using fallback cache invalidation",
-        method: "fallback-cache-invalidation",
-        chunkError: chunkError.message,
-        approach: "cache-invalidation-fallback",
-      });
+      case "trigger-replace":
+        return await triggerHotReplaceDocument(searchString || "PLACEHOLDER", replaceString || "HOT REPLACE SUCCESS!!", res);
+
+      default:
+        return res.status(400).json({
+          error: `Unknown action: ${action}`,
+          availableActions: ["test", "status", "trigger-replace"],
+        });
     }
   } catch (error) {
-    console.error("[Hot Replace Document] Error:", error);
+    console.error("[Hot Replace Document API] Error:", error);
     return res.status(500).json({
-      error: "Failed to hot replace document",
+      error: "Internal server error",
       message: error.message,
+      method: "hot-replace-document",
+    });
+  }
+}
+
+async function triggerHotReplaceDocument(searchString, replaceString, res) {
+  try {
+    console.log(`[Hot Replace Document] Triggering hot replace: "${searchString}" → "${replaceString}"`);
+
+    // Step 1: Read the existing compiled document
+    const serverDocPath = path.join(
+      process.cwd(),
+      ".next",
+      "server",
+      "pages",
+      "_document.js",
+    );
+    let originalContent;
+
+    try {
+      originalContent = await fs.readFile(serverDocPath, "utf8");
+      console.log(
+        `[Hot Replace Document] Read compiled document: ${originalContent.length} bytes`,
+      );
+    } catch (error) {
+      return res.status(404).json({
+        success: false,
+        error: "Compiled document not found",
+        serverDocPath,
+        message: "Visit the page first to trigger compilation, then try hot replace",
+      });
+    }
+
+    // Step 2: Perform string replacement
+    const updatedContent = originalContent.replace(
+      new RegExp(searchString, 'g'),
+      replaceString,
+    );
+
+    if (updatedContent === originalContent) {
+      return res.status(400).json({
+        success: false,
+        error: `Search string "${searchString}" not found in compiled document`,
+        message: "The compiled document may not contain the expected content",
+      });
+    }
+
+    // Step 3: Write the updated content back
+    await fs.writeFile(serverDocPath, updatedContent, "utf8");
+    console.log(`[Hot Replace Document] Updated document with string replacement`);
+
+    // Step 4: Clear module cache
+    let cacheCleared = false;
+    try {
+      if (global.__SERVER_HMR__ && global.__SERVER_HMR__.clearModuleCache) {
+        const clearResult = global.__SERVER_HMR__.clearModuleCache(serverDocPath);
+        cacheCleared = clearResult.success;
+        console.log("[Hot Replace Document] Triggered cache invalidation via Server HMR API");
+      } else {
+        // Fallback: Clear the require cache manually
+        if (require.cache[serverDocPath]) {
+          delete require.cache[serverDocPath];
+          cacheCleared = true;
+          console.log("[Hot Replace Document] Cleared require cache manually");
+        }
+      }
+    } catch (error) {
+      console.log("[Hot Replace Document] Cache clearing failed:", error.message);
+    }
+
+    // Step 5: Clear all pages cache for good measure
+    try {
+      if (global.__SERVER_HMR__ && global.__SERVER_HMR__.clearAllPages) {
+        global.__SERVER_HMR__.clearAllPages();
+        console.log("[Hot Replace Document] Cleared all pages cache");
+      }
+    } catch (error) {
+      console.log("[Hot Replace Document] Clear all pages failed:", error.message);
+    }
+
+    return res.json({
+      success: true,
+      method: "hot-replace-document",
+      details: {
+        approach: "string-replacement-in-compiled-file",
+        searchString,
+        replaceString,
+        originalSize: originalContent.length,
+        updatedSize: updatedContent.length,
+        serverDocPath,
+        cacheCleared,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error(`[Hot Replace Document] Error triggering hot replace:`, error);
+    return res.status(500).json({
+      success: false,
+      error: "Hot replace trigger failed",
+      message: error.message,
+      searchString,
+      replaceString,
     });
   }
 }
