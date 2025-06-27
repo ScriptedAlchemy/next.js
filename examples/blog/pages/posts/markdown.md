@@ -7,7 +7,7 @@ author: You
 ---
 
 # Markdown Examples
-
+PAGE_HMR_AREA
 ## h2 Heading
 
 ### h3 Heading

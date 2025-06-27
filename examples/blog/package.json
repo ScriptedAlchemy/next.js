@@ -1,9 +1,23 @@
 {
   "private": true,
   "scripts": {
-    "dev": "next",
+    "dev": "npm run patch:apply && next",
     "build": "node ./scripts/gen-rss.js && next build",
-    "start": "next start"
+    "start": "next start",
+    "patch:apply": "cp patches/next-dev-server.js node_modules/next/dist/server/dev/next-dev-server.js && echo '✅ Applied Next.js dev server patch'",
+    "patch:restore": "npm install --force && echo '✅ Restored original Next.js files'",
+    "test": "node --test --test-concurrency=1 test/",
+    "test:watch": "node --test --watch --test-concurrency=1 test/",
+    "test:verbose": "node --test --test-concurrency=1 --test-reporter=spec test/",
+    "test:working": "node test/working-hmr.test.js",
+    "test:simple1": "node test/simple-method1.test.js",
+    "test:integration": "node test/integration.test.js",
+    "test:comparison": "node test/hmr-approaches-comparison.test.js",
+    "test:comprehensive": "node test/comprehensive-hmr.test.js",
+    "test:hmr": "node test/hmr.test.js",
+    "test:method1": "node test/method1-file-based-hmr.test.js",
+    "test:isolated": "npm run test:simple1 && npm run test:working",
+    "test:all": "npm run test:isolated && npm run test:comprehensive && npm run test:comparison"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
