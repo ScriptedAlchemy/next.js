@@ -9,17 +9,20 @@ This report documents the comprehensive testing of the `HotReloaderWebpack` clas
 ### ✅ What Works Successfully
 
 1. **Import and Instantiation**
+
    - ✅ Can import `HotReloaderWebpack` from `'next/dist/server/dev/hot-reloader-webpack'`
    - ✅ Can create instances with proper constructor parameters
    - ✅ Constructor accepts: `dir` (string) and options object with required properties
 
 2. **Basic Method Calls**
+
    - ✅ `setHmrServerError(error)` - Sets HMR server error state
    - ✅ `clearHmrServerError()` - Clears HMR server error state
    - ✅ `invalidate()` - Triggers compilation invalidation
    - ✅ `close()` - Closes the hot reloader
 
 3. **Async Methods**
+
    - ✅ `getCompilationErrors(page)` - Returns array of compilation errors
    - ✅ `ensurePage(options)` - Ensures page is available for compilation
 
@@ -30,10 +33,12 @@ This report documents the comprehensive testing of the `HotReloaderWebpack` clas
 ### ❌ What Doesn't Work Without Full Setup
 
 1. **HMR Messaging**
+
    - ❌ `send(action)` method fails - requires `webpackHotMiddleware` setup
    - Error: "Cannot read properties of undefined (reading 'publish')"
 
 2. **Webpack Operations**
+
    - ❌ `buildFallbackError()` fails - needs complete webpack configuration
    - ❌ `start()` method requires full Next.js dev environment
    - ❌ Advanced webpack operations need compiler instances
@@ -62,6 +67,7 @@ new HotReloaderWebpack(dir, {
 ## Available Methods
 
 ### Public Methods
+
 - `run(req, res, parsedUrl)` - Handle HMR requests
 - `setHmrServerError(error)` - Set server error state
 - `clearHmrServerError()` - Clear server error state
@@ -74,6 +80,7 @@ new HotReloaderWebpack(dir, {
 - `close()` - Close the hot reloader
 
 ### Public Properties
+
 - `serverStats` - Server compilation statistics
 - `edgeServerStats` - Edge server compilation statistics
 - `multiCompiler` - Webpack multi-compiler instance
@@ -82,11 +89,13 @@ new HotReloaderWebpack(dir, {
 ## Dependencies Required for Full Functionality
 
 1. **Webpack Setup**
+
    - MultiCompiler instance with client, server, and edge-server compilers
    - Proper webpack configurations for each compilation target
    - File system watchers and compilation hooks
 
 2. **HMR Middleware**
+
    - WebpackHotMiddleware for browser communication
    - WebSocket server for real-time updates
    - HMR action publishing mechanisms
@@ -100,20 +109,22 @@ new HotReloaderWebpack(dir, {
 ## Recommended Usage Patterns
 
 ### ✅ Safe Usage
+
 ```javascript
 // For testing basic functionality
 const instance = new HotReloaderWebpack(dir, minimalConfig);
 instance.setHmrServerError(null);
 instance.clearHmrServerError();
-const errors = await instance.getCompilationErrors('/page');
-await instance.ensurePage({ page: '/', clientOnly: false });
+const errors = await instance.getCompilationErrors("/page");
+await instance.ensurePage({ page: "/", clientOnly: false });
 instance.close();
 ```
 
 ### ⚠️ Production Usage
+
 ```javascript
 // Use within Next.js dev server setup
-import { setupDevBundler } from 'next/dist/server/lib/router-utils/setup-dev-bundler';
+import { setupDevBundler } from "next/dist/server/lib/router-utils/setup-dev-bundler";
 
 const { hotReloader } = await setupDevBundler({
   dir,
@@ -124,19 +135,20 @@ const { hotReloader } = await setupDevBundler({
 });
 
 // Now hotReloader is fully functional
-hotReloader.send({ action: 'building' });
+hotReloader.send({ action: "building" });
 await hotReloader.start();
 ```
 
 ### ❌ Avoid
+
 ```javascript
 // Don't try to access non-existent global instances
-global.__nextHotReloader // undefined
-process.__nextDevServer  // undefined
+global.__nextHotReloader; // undefined
+process.__nextDevServer; // undefined
 
 // Don't call complex methods without setup
-instance.start() // Will fail without webpack setup
-instance.send(action) // Will fail without middleware
+instance.start(); // Will fail without webpack setup
+instance.send(action); // Will fail without middleware
 ```
 
 ## Test Scripts Created

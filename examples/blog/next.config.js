@@ -1,6 +1,6 @@
 // Load server HMR in development
-if (process.env.NODE_ENV === 'development') {
-  require('./lib/server-hmr-only');
+if (process.env.NODE_ENV === "development") {
+  require("./lib/server-hmr-only");
 }
 
 const withNextra = require("nextra")({

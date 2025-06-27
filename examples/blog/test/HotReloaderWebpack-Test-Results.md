@@ -1,9 +1,11 @@
 # HotReloaderWebpack Class Testing Results
 
 ## Overview
+
 This document summarizes the results of testing the HotReloaderWebpack class from Next.js internals (`next/dist/server/dev/hot-reloader-webpack`).
 
 ## Test Environment
+
 - **Working Directory**: `/Users/bytedance/dev/next.js/examples/blog`
 - **Node Version**: `v18.20.8`
 - **Next.js Version**: `15.3.4`
@@ -15,6 +17,7 @@ This document summarizes the results of testing the HotReloaderWebpack class fro
 ### ✅ What Works Successfully
 
 #### 1. Import and Access
+
 - **✅ Successfully imported** from `'next/dist/server/dev/hot-reloader-webpack'`
 - **✅ Class is accessible** as default export
 - **✅ Additional utility functions** available:
@@ -23,13 +26,15 @@ This document summarizes the results of testing the HotReloaderWebpack class fro
   - `matchNextPageBundleRequest()` - URL pattern matcher
 
 #### 2. Constructor and Instance Creation
+
 - **✅ Constructor parameters identified**:
+
   - `dir` (string): Project directory path
   - `config` (NextConfigComplete): Complete Next.js configuration
   - `distDir` (string): Distribution directory (`.next`)
   - `buildId` (string): Build identifier
   - `encryptionKey` (string): HMR encryption key
-  - `previewProps` (__ApiPreviewProps): Preview mode configuration
+  - `previewProps` (\_\_ApiPreviewProps): Preview mode configuration
   - `rewrites` (CustomRoutes['rewrites']): Route rewrites
   - `telemetry` (Telemetry): Telemetry instance
   - `resetFetch` (function): Fetch cache reset function
@@ -38,7 +43,9 @@ This document summarizes the results of testing the HotReloaderWebpack class fro
 - **✅ Instance creation successful** with proper mock dependencies
 
 #### 3. Available Methods
+
 The class exposes these methods:
+
 - `run()` - Handle HTTP requests
 - `setHmrServerError()` - Set server error state
 - `clearHmrServerError()` - Clear server error state
@@ -55,8 +62,9 @@ The class exposes these methods:
 - `close()` - Close hot reloader
 
 #### 4. Successfully Testable Methods
+
 - **✅ `setHmrServerError(null)`** - Works without setup
-- **✅ `clearHmrServerError()`** - Works without setup  
+- **✅ `clearHmrServerError()`** - Works without setup
 - **✅ `invalidate()`** - Works without setup
 - **✅ `invalidate({ reloadAfterInvalidation: true })`** - Works with options
 - **✅ `close()`** - Works without setup
@@ -64,7 +72,9 @@ The class exposes these methods:
 - **✅ `ensurePage({ page: '/', clientOnly: true })`** - Works without full setup
 
 #### 5. HMR Action Types
+
 Available HMR action constants:
+
 - `ADDED_PAGE`, `REMOVED_PAGE`, `RELOAD_PAGE`
 - `SERVER_COMPONENT_CHANGES`, `MIDDLEWARE_CHANGES`
 - `CLIENT_CHANGES`, `SERVER_ONLY_CHANGES`
@@ -76,12 +86,14 @@ Available HMR action constants:
 ### ⚠️ What Requires Full Setup
 
 #### Methods Requiring Webpack/Middleware Setup
+
 - **⚠️ `send(action)`** - Requires `webpackHotMiddleware` to be initialized
 - **⚠️ `start()`** - Requires complete webpack configuration and compilation setup
 - **⚠️ `buildFallbackError()`** - Needs webpack compiler and project structure
 - **⚠️ `run(req, res, parsedUrl)`** - Requires HTTP request/response objects
 
 #### Dependencies for Full Functionality
+
 - **Webpack Compiler**: MultiCompiler instance with client/server/edge configurations
 - **WebpackHotMiddleware**: For publishing HMR messages to browsers
 - **OnDemandEntries**: For dynamic page compilation
@@ -91,17 +103,20 @@ Available HMR action constants:
 ### ❌ Limitations and Constraints
 
 #### 1. No Global Access
+
 - **❌ No singleton pattern** - Class must be manually instantiated
 - **❌ No global instances** found in `global` or `process` objects
 - **❌ Cannot access existing dev server instances** from external scripts
 - **❌ No process-attached references** to running hot reloaders
 
 #### 2. Environment Dependencies
+
 - **❌ Requires full Next.js dev server context** for advanced functionality
 - **❌ Cannot function independently** outside Next.js development environment
 - **❌ Complex dependency chain** makes isolated testing difficult
 
 #### 3. Method Limitations
+
 - **❌ `send()` fails** without middleware: "Cannot read properties of undefined (reading 'publish')"
 - **❌ Advanced compilation methods** require webpack compiler setup
 - **❌ File watching and HMR** need complete project structure
@@ -112,37 +127,37 @@ Available HMR action constants:
 
 ```javascript
 const mockConfig = {
-  distDir: '.next',
-  pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
+  distDir: ".next",
+  pageExtensions: ["tsx", "ts", "jsx", "js"],
   experimental: {
     caseSensitiveRoutes: false,
     optimizeServerReact: true,
     nodeMiddleware: false,
-    globalNotFound: false
+    globalNotFound: false,
   },
   env: {},
-  basePath: '',
-  assetPrefix: '',
+  basePath: "",
+  assetPrefix: "",
   output: undefined,
   logging: { fetches: { fullUrl: false } },
-  typescript: { 
+  typescript: {
     tsconfigPath: undefined,
-    ignoreBuildErrors: false 
+    ignoreBuildErrors: false,
   },
   webpack: null,
   webpackDevMiddleware: null,
-  configFileName: 'next.config.js',
+  configFileName: "next.config.js",
   _originalRewrites: undefined,
   _originalRedirects: undefined,
   images: {
     disableStaticImages: false,
     sizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    formats: ['image/webp']
+    formats: ["image/webp"],
   },
   onDemandEntries: {
     maxInactiveAge: 60 * 1000,
-    pagesBufferLength: 2
-  }
+    pagesBufferLength: 2,
+  },
 };
 ```
 
@@ -150,45 +165,47 @@ const mockConfig = {
 
 ```javascript
 const mockPreviewProps = {
-  previewModeId: 'test-preview-mode-id',
-  previewModeSigningKey: 'test-signing-key', 
-  previewModeEncryptionKey: 'test-encryption-key'
+  previewModeId: "test-preview-mode-id",
+  previewModeSigningKey: "test-signing-key",
+  previewModeEncryptionKey: "test-encryption-key",
 };
 
 const mockTelemetry = {
   record: () => {},
   flush: () => Promise.resolve(),
   setAnonymousId: () => {},
-  anonymousId: 'test-anonymous-id'
+  anonymousId: "test-anonymous-id",
 };
 
 const mockRewrites = {
   beforeFiles: [],
   afterFiles: [],
-  fallback: []
+  fallback: [],
 };
 ```
 
 ## Practical Usage Recommendations
 
 ### 1. Within Next.js Dev Server Context
+
 ```javascript
 // Best approach: Use within Next.js development server
 // The class is designed to be instantiated by Next.js itself
 ```
 
 ### 2. For Testing Specific Methods
+
 ```javascript
 // Create minimal instance for testing basic methods
 const hotReloader = new HotReloaderWebpack(projectDir, {
   config: mockConfig,
-  distDir: '.next',
-  buildId: 'test',
-  encryptionKey: 'test-key-32-chars-long',
+  distDir: ".next",
+  buildId: "test",
+  encryptionKey: "test-key-32-chars-long",
   previewProps: mockPreviewProps,
   rewrites: mockRewrites,
   telemetry: mockTelemetry,
-  resetFetch: () => {}
+  resetFetch: () => {},
 });
 
 // Test basic methods
@@ -198,6 +215,7 @@ hotReloader.close();
 ```
 
 ### 3. For Advanced HMR Features
+
 ```javascript
 // Requires full Next.js development server environment
 // Use Next.js CLI instead: `next dev`
@@ -206,8 +224,9 @@ hotReloader.close();
 ## Security Considerations
 
 The HotReloaderWebpack class appears to be designed for development use only and includes:
+
 - Encryption keys for secure HMR communication
-- File system access for monitoring changes  
+- File system access for monitoring changes
 - HTTP/WebSocket server capabilities
 - Build artifact management
 
