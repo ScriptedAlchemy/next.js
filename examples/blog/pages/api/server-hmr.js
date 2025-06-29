@@ -15,10 +15,10 @@ export default function handler(req, res) {
   const { action, targetPath, virtualChunkPath, modulePath } = req.body;
 
   // Check if server HMR is available
-  if (!global.__SERVER_HMR__) {
+  if (!global.__NATIVE_SERVER_HMR__) {
     return res.status(500).json({
       error: "Server HMR not initialized",
-      suggestion: "Make sure next.config.js is loading server-hmr-only.js",
+      suggestion: "Make sure next.config.js is loading server-hmr.js",
     });
   }
 
@@ -30,12 +30,12 @@ export default function handler(req, res) {
         return res.json({
           success: true,
           message: "Server HMR API is working",
-          availableFunctions: Object.keys(global.__SERVER_HMR__),
+          availableFunctions: Object.keys(global.__NATIVE_SERVER_HMR__),
           timestamp: new Date().toISOString(),
         });
 
       case "cache-info":
-        const cacheInfo = global.__SERVER_HMR__.getCacheInfo();
+        const cacheInfo = global.__NATIVE_SERVER_HMR__.getCacheInfo();
         return res.json({
           success: true,
           result: cacheInfo,
@@ -49,7 +49,7 @@ export default function handler(req, res) {
           });
         }
 
-        const swapResult = global.__SERVER_HMR__.hotSwapModule(
+        const swapResult = global.__NATIVE_SERVER_HMR__.hotSwapModule(
           targetPath,
           virtualChunkPath,
         );
@@ -65,21 +65,21 @@ export default function handler(req, res) {
           });
         }
 
-        const clearResult = global.__SERVER_HMR__.clearModuleCache(modulePath);
+        const clearResult = global.__NATIVE_SERVER_HMR__.clearModuleCache(modulePath);
         return res.json({
           success: clearResult.success,
           result: clearResult,
         });
 
       case "clear-all-pages":
-        const clearAllResult = global.__SERVER_HMR__.clearAllPages();
+        const clearAllResult = global.__NATIVE_SERVER_HMR__.clearAllPages();
         return res.json({
           success: clearAllResult.success,
           result: clearAllResult,
         });
 
       case "safe-reset":
-        const resetResult = global.__SERVER_HMR__.safeReset();
+        const resetResult = global.__NATIVE_SERVER_HMR__.safeReset();
         return res.json({
           success: resetResult.success,
           result: resetResult,

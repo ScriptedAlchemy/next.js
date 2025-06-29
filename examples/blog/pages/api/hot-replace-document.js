@@ -135,8 +135,8 @@ async function triggerHotReplaceDocument(searchString, replaceString, res) {
     // Step 4: Clear module cache
     let cacheCleared = false;
     try {
-      if (global.__SERVER_HMR__ && global.__SERVER_HMR__.clearModuleCache) {
-        const clearResult = global.__SERVER_HMR__.clearModuleCache(serverDocPath);
+      if (global.__NATIVE_SERVER_HMR__ && global.__NATIVE_SERVER_HMR__.clearModuleCache) {
+        const clearResult = global.__NATIVE_SERVER_HMR__.clearModuleCache(serverDocPath);
         cacheCleared = clearResult.success;
         console.log("[Hot Replace Document] Triggered cache invalidation via Server HMR API");
       } else {
@@ -153,8 +153,8 @@ async function triggerHotReplaceDocument(searchString, replaceString, res) {
 
     // Step 5: Clear all pages cache for good measure
     try {
-      if (global.__SERVER_HMR__ && global.__SERVER_HMR__.clearAllPages) {
-        global.__SERVER_HMR__.clearAllPages();
+      if (global.__NATIVE_SERVER_HMR__ && global.__NATIVE_SERVER_HMR__.clearAllPages) {
+        global.__NATIVE_SERVER_HMR__.clearAllPages();
         console.log("[Hot Replace Document] Cleared all pages cache");
       }
     } catch (error) {

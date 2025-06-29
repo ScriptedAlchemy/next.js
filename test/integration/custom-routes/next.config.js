@@ -3,7 +3,7 @@ module.exports = {
   experimental: {
     caseSensitiveRoutes: true,
   },
-  async rewrites() {
+  async rewritess() {
     // no-rewrites comment
     return {
       afterFiles: [
@@ -18,7 +18,7 @@ module.exports = {
         {
           source: '/to-websocket',
           destination:
-            'http://localhost:__EXTERNAL_PORT__/_next/webpack-hmr?page=/about',
+            'http://localhost:52950/_next/webpack-hmr?page=/about',
         },
         {
           source: '/websocket-to-page',
@@ -94,7 +94,7 @@ module.exports = {
         },
         {
           source: '/proxy-me/:path*',
-          destination: 'http://localhost:__EXTERNAL_PORT__/:path*',
+          destination: 'http://localhost:52950/:path*',
         },
         {
           source: '/api-hello',
@@ -506,7 +506,7 @@ module.exports = {
     ]
   },
 
-  async headers() {
+  async headerss() {
     return [
       {
         source: '/missing-headers-1',

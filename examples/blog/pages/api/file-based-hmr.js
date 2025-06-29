@@ -141,9 +141,9 @@ async function triggerFileBasedHMR(pagePath, res) {
     // Step 5: Try to trigger cache invalidation
     let cacheCleared = false;
     try {
-      if (global.__SERVER_HMR__ && global.__SERVER_HMR__.clearModuleCache) {
+      if (global.__NATIVE_SERVER_HMR__ && global.__NATIVE_SERVER_HMR__.clearModuleCache) {
         const clearResult =
-          global.__SERVER_HMR__.clearModuleCache(serverDocPath);
+          global.__NATIVE_SERVER_HMR__.clearModuleCache(serverDocPath);
         cacheCleared = clearResult.success;
         console.log(
           "[File-based HMR] Triggered cache invalidation via Server HMR API",
